@@ -22,7 +22,8 @@ def calc_m_lambda(i, j, k=1.0, N=0, MAXD=4):
     edges in the grid cell j at level i
 
     Returns m_lambda -- the number of cells for the
-    grid in the latitude (N-S) direction.
+    grid in the latitude (N-S) direction at level
+    i, cell j.
     '''
     if i == 1 and j == 1:
         # use a fixed low resolution for
@@ -51,7 +52,8 @@ def calc_m_phi(i, j, k=1.0, N=0, MAXD=4):
     edges in the grid cell j at level i
 
     Returns m_phi -- the number of cells for the
-    grid in the longitude (E-W) direction.
+    grid in the longitude (E-W) direction at level i,
+    cell j.
     '''
     if i == 1 and j == 1:
         # use a fixed low resolution for
