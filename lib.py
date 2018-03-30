@@ -4,13 +4,16 @@ algorithm implementation described by Li et al. (2017).
 
 import numpy as np
 
-def calc_m_lambda(i, j):
+def calc_m_lambda(i, j, MAXD=4):
     '''
     From equation 1 in Li et al. (2017)
 
     i is the level of the grid
 
     j is the grid on the level designated by i
+
+    MAXD is the set maximum level of the
+    multilevel grids
 
     Returns m_lambda -- the number of cells for the
     grid in the latitude (N-S) direction.
@@ -24,13 +27,16 @@ def calc_m_lambda(i, j):
 
     return m_lambda
 
-def calc_m_phi(i, j):
+def calc_m_phi(i, j, MAXD=4):
     '''
     From equation 1 in Li et al. (2017)
 
     i is the level of the grid
 
     j is the grid on the level designated by i
+
+    MAXD is the set maximum level of the
+    multilevel grids
 
     Returns m_phi -- the number of cells for the
     grid in the longitude (E-W) direction.
