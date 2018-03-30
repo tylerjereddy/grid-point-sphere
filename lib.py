@@ -35,8 +35,11 @@ def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
         # use a fixed low resolution for
         # the first level grid
         m_lambda = 10
-
-    # TODO: implement deeper levels of the grid
+    else:
+        m_lambda = l_lambda * _grid_build_coef(k,
+                                               l_lambda,
+                                               l_phi,
+                                               N)
 
     return m_lambda
 
@@ -71,7 +74,14 @@ def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
         # use a fixed low resolution for
         # the first level grid
         m_phi = 20
-
-    # TODO: implement deeper levels of the grid
+    else:
+        m_phi = l_phi * _grid_build_coef(k,
+                                         l_lambda,
+                                         l_phi,
+                                         N)
 
     return m_phi
+
+def _grid_build_coef(k=1.0, l_lambda=1, l_phi=1, N=0):
+    # utility function needed by calc_m_lambda and calc_m_phi
+    return np.sqrt((k * N) / (l_lambda * l_phi))
