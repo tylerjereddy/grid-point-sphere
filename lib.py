@@ -10,7 +10,7 @@ def calc_m_lambda(i, j, MAXD=4):
 
     i is the level of the grid
 
-    j is the grid on the level designated by i
+    j is the grid cell on the level designated by i
 
     MAXD is the set maximum level of the
     multilevel grids
@@ -33,7 +33,7 @@ def calc_m_phi(i, j, MAXD=4):
 
     i is the level of the grid
 
-    j is the grid on the level designated by i
+    j is the grid cell on the level designated by i
 
     MAXD is the set maximum level of the
     multilevel grids
