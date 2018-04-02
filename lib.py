@@ -161,3 +161,74 @@ def arc_plane_side(center,
                         np.stack([point_A, point_B])),
                np.stack([point_A, point_C]))
     return w
+
+def determine_arc_intersection(point_A,
+                               point_B,
+                               point_C,
+                               point_D,
+                               center):
+    '''
+    Determine if two spherical
+    arcs intersect.
+
+    The conditions described in the
+    paragraph at the top of page 61
+    in the manuscript must be satisfied
+    for two spherical arcs to be labelled
+    as intersecting.
+
+    In short, points AB must be on opposite
+    sides of the plane formed by CD and
+    the center of the sphere, and the reverse
+    must also be true.
+
+    point_A: The Cartesian coord of the
+             start of spherical arc 1
+
+    point_B: The Cartesian coord of the
+             end of spherical arc 1
+
+    point_C: The Cartesian coord of the
+             start of spherical arc 2
+
+    point_D: The Cartesian coord of the
+             end of spherical arc 2
+
+    center: the center of the sphere on which
+            the point in spherical polygon test
+            is being performed [x,y,z]
+
+    returns bool: True if the arcs
+                  intersect; otherwise,
+                  False.
+    '''
+    # TODO: reduce code duplication
+    # by abstracting some repeated
+    # logic here
+    w_vals = []
+    for point in [point_A, point_B]:
+        w = arc_plane_side(center,
+                           point_C,
+                           point_D,
+                           point)
+        w_vals.append(w)
+
+    if np.sign(w_vals).sum() != 0:
+        # same side of opposite plane
+        # so no intersection of arcs
+        return False
+
+    w_vals = []
+    for point in [point_C, point_D]:
+        w = arc_plane_side(center,
+                           point_A,
+                           point_B,
+                           point)
+        w_vals.append(w)
+
+    if np.sign(w_vals).sum() != 0:
+        # same side of opposite plane
+        # so no intersection of arcs
+        return False
+
+    return True
