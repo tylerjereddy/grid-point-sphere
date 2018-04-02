@@ -12,3 +12,7 @@ Session.vim
 *~
 # Auto-generated tag files
 tags
+
+# pytest related tags
+.cache
+__pycache__/
