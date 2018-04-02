@@ -11,7 +11,7 @@ import lib
                          # through +y
                          (np.array([0, sqrt(2) / 2., sqrt(2) / 2.]),
                           np.array([0, sqrt(2) / 2., -sqrt(2) / 2.]),
-                          np.array([-sqrt(2) / 2., -sqrt(2) / 2., 0]),
+                          np.array([-sqrt(2) / 2., sqrt(2) / 2., 0]),
                           np.array([sqrt(2) / 2., sqrt(2) / 2., 0]),
                           np.zeros((3,)),
                           True),
