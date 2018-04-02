@@ -157,9 +157,9 @@ def arc_plane_side(center,
     returns w: > 0 on left side of plane;
                < 0 on right side of plane
     '''
-    w = np.dot(np.cross(np.stack([center, point_A]),
-                        np.stack([point_A, point_B])),
-               np.stack([point_A, point_C]))
+    w = np.dot(np.cross((point_A - center),
+                        (point_B - point_A)),
+               point_C - point_A)
     return w
 
 def determine_arc_intersection(point_A,
