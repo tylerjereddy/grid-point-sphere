@@ -15,6 +15,15 @@ import lib
                           np.array([sqrt(2) / 2., sqrt(2) / 2., 0]),
                           np.zeros((3,)),
                           True),
+                         # adjusting the first arc such that it
+                         # no longer traverses the equator means
+                         # there should be no arc intersection
+                         (np.array([0, sqrt(2) / 2., sqrt(2) / 2.]),
+                          np.array([0, sqrt(3) / 2., 0.5]),
+                          np.array([-sqrt(2) / 2., sqrt(2) / 2., 0]),
+                          np.array([sqrt(2) / 2., sqrt(2) / 2., 0]),
+                          np.zeros((3,)),
+                          False),
                           ])
 def test_arc_intersect(A, B, C, D, center, expected):
     # test that spherical arc (parts
