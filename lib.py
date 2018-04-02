@@ -120,3 +120,44 @@ def inclusion_property(center_1_property,
             return 'inside'
         else:
             return 'outside'
+
+def arc_plane_side(center,
+                   point_A,
+                   point_B,
+                   point_C,
+                   ):
+    '''
+    Determine which side of a great circle plane
+    a point on the surface of the sphere is on. The
+    anticipated use case is as part of the process
+    for determing if two minor arcs intersect (i.e.,
+    if the arc connecting two center points in grid
+    intersects with an arc representing an edge
+    of the spherical polygon). In that case,
+    this function would likely be called four
+    times--all four points must be on opposite sides
+    of the opposite arc.
+
+    Calculations are performed in rectangular (Cartesian)
+    coordinate system, as described in manuscript.
+
+    center: the center of the sphere on which
+            the point in spherical polygon test
+            is being performed [x,y,z]
+
+    point_A: the Cartesian coords of point A
+
+    point_B: the Cartesian coords of point B
+
+    point_C: Cartesian coords of point C,
+             for which it is desired to assess
+             which side of the plane through
+             A, B & center it lies on
+
+    returns w: > 0 on left side of plane;
+               < 0 on right side of plane
+    '''
+    w = np.dot(np.cross(np.stack([center, point_A]),
+                        np.stack([point_A, point_B])),
+               np.stack([point_A, point_C]))
+    return w
