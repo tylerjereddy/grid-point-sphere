@@ -232,3 +232,28 @@ def determine_arc_intersection(point_A,
         return False
 
     return True
+
+def cast_grid_level_1():
+    '''
+    Cast the initial (level 1)
+    grid on the sphere. As described
+    in the manuscript, the level 1 grid
+    has fixed size / coarse resolution.
+
+    Returns: mesh-grid ndarrays at
+             the fixed dimensionalities
+             specified by Equation 1
+             in manuscript
+    '''
+
+    # the first level grid is at
+    # a fixed resolution that is
+    # coarse & uniform
+    m_lambda_1 = calc_m_lambda(i=1, j=1)
+    m_phi_1 = calc_m_phi(i=1, j=1)
+
+    level_1 = np.mgrid[-np.pi / 2.:np.pi / 2.:complex(m_lambda_1),
+                       -np.pi:np.pi:complex(m_phi_1)]
+    # level_1 grid should have shape:
+    # (2, m_lambda_1, m_phi_1)
+    return level_1
