@@ -47,3 +47,40 @@ def test_grid_cast_level_1_shape():
     result = level_1_grid.shape
 
     assert result == (2, m_lambda_1, m_phi_1)
+
+def test_grid_cells_level_1_shape():
+    # test that the number of grid cells
+    # iterated over in level 1 matches
+    # with expectations
+
+    m_lambda_1 = 10
+    m_phi_1 = 20
+
+    # based on back of the envelope
+    # calculations, I expect
+    cells_expected = (m_lambda_1 - 1) * (m_phi_1 - 1)
+
+    test_polygon = np.array([[0,0,1],
+                             [0,1,0],
+                             [1,0,0]])
+
+    result = lib.cast_subgrids(test_polygon).size
+
+    assert result == cells_expected
+
+def test_grid_level_1_edge_count_boundary():
+    # given a test input spherical polygon
+    # that covers less than 1/8 the total
+    # surface area of a sphere, it should
+    # be impossible to have spherical polygon
+    # edges in >= 1/2 of all grid cells
+    # covering the sphere surface at level 1
+
+    test_polygon = np.array([[0,0,1],
+                             [0,np.sqrt(2) / 2., np.sqrt(2) / 2.],
+                             [np.sqrt(2) / 2., 0, np.sqrt(2) / 2.]])
+
+    result = lib.cast_subgrids(test_polygon)
+    max_allowed = int(result.size / 2.)
+
+    assert np.count_nonzero(result) < max_allowed
