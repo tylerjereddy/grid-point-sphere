@@ -257,3 +257,78 @@ def cast_grid_level_1():
     # level_1 grid should have shape:
     # (2, m_lambda_1, m_phi_1)
     return level_1
+
+# NOTE: this function is in
+# the very early stages of dev
+def cast_subgrids(spherical_polyon,
+                  MAXD=4):
+    '''
+    spherical_polyon: an ndarray of the
+                      sorted vertices of
+                      the spherical polygon
+                      in Cartesian coords
+                      shape -- (N, 3)
+
+    MAXD is the set maximum level of the
+    multilevel grids
+
+    '''
+
+    # divide the initial fixed uniform
+    # grid on the sphere into uniform
+    # subgrids based on spherical
+    # polygon edge containment
+
+    level_1 = cast_grid_level_1()
+
+    # Cartesian coordinates are
+    # used to determine arc intersections
+    # so it will be necessary to probe
+    # the interactions between
+    # spherical polygon edges & grid
+    # cells accordingly
+
+
+    # I will need an appropriate data
+    # structure for storing the values
+    # of N for each grid cell in level 1,
+    # where N is the number of spherical
+    # polygon edges determined to be in
+    # the grid cell
+
+    # level_1 has data structure with shape:
+    # (2, n_latitude, n_longitude)
+    # each row in the first array is just
+    # a duplication of the same lat value
+    # i.e., [0, 0, 0, ...], [1, 1, 1, ...]
+    # each row in the second array cycles
+    # through all possible long values
+    # i.e., [0, 1, 2, ...], [0, 1, 2, ...]
+
+    level_1_lat = level_1[0]
+    level_1_long = level_1[1]
+
+    # a grid cell has four vertices and
+    # four edges
+    # these can be assigned / indexed as: i, i + 1
+    # for matching rows from lat and lon
+    # arrays [i.e., rows 0 and 1 with i, i + 1
+    # for both lat and lon]
+
+    # it will likely be necessary to iterate by just
+    # +1 each time since the right edge of one grid
+    # cell is also the left edge of the next, etc.
+    # likewise for tops & bottoms of grid cells
+
+    for i in range(level_1_lat.shape[0]):
+        # grid cell vertex coords (lambda, phi)
+        # or (latitude, longitude):
+        for j in range(level_1_long[0].size):
+            top_left_corner = np.array([level_1_lat[i][j],
+                                        level_1_long[i][j]])
+            top_right_corner = np.array([level_1_lat[i][j + 1],
+                                        level_1_long[i][j + 1]])
+            bottom_left_corner = np.array([level_1_lat[i + 1][j],
+                                           level_1_long[i + 1][j]])
+            bottom_right_corner = np.array([level_1_lat[i + 1][j + 1],
+                                           level_1_long[i + 1][j + 1]])
