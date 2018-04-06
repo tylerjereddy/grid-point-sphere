@@ -409,6 +409,28 @@ def cast_subgrids(spherical_polyon,
                         break
 
     edge_count_array = np.array(grid_cell_edge_counts_level_1)
+
+    # draft code to determine the number of lambda (N-S latitude)
+    # divisions needed for each grid cell in level 1 based
+    # on the number of spherical polygon edges that each contains
+
+    # let's just use crude Python looping for now & worry
+    # about vectorization later
+    lambda_expansions = np.zeros(edge_count_array.size)
+
+    # l_lambda should be number of degrees of latitude spanned by
+    # a given grid cell at level 1
+    l_lambda = np.pi / 10.
+    # similarly for longitude at level 1
+    l_phi = ( 2 * np.pi ) / 20.
+    for grid_index in range(grid_cell_counter):
+        N = edge_count_array[grid_index]
+        lambda_expansions[grid_index] = calc_m_lambda(i=1,
+                                                      j=1, # not used really
+                                                      l_lambda=l_lambda,
+                                                      l_phi=l_phi,
+                                                      N=N)
+
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
     # just debugging the first level spherical polygon
