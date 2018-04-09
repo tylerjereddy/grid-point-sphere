@@ -417,6 +417,9 @@ def cast_subgrids(spherical_polyon,
     # let's just use crude Python looping for now & worry
     # about vectorization later
     lambda_expansions = np.zeros(edge_count_array.size)
+    # similar data structure for longitude (E-W) expansion
+    # accounting
+    phi_expansions = np.zeros(edge_count_array.size)
 
     # l_lambda should be number of degrees of latitude spanned by
     # a given grid cell at level 1
@@ -430,6 +433,11 @@ def cast_subgrids(spherical_polyon,
                                                       l_lambda=l_lambda,
                                                       l_phi=l_phi,
                                                       N=N)
+        phi_expansions[grid_index] = calc_m_phi(i=1,
+                                                j=1, # not used really
+                                                l_lambda=l_lambda,
+                                                l_phi=l_phi,
+                                                N=N)
 
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
