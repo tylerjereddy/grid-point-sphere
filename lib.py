@@ -439,6 +439,48 @@ def cast_subgrids(spherical_polyon,
                                                 l_phi=l_phi,
                                                 N=N)
 
+    # start drafting code to generate the level 2 grids
+    # based on requisite level 1 subdivisions calculated
+    # above
+    # undecided on exact data structure -- start experimenting
+    # with a dictionary
+    dict_level_2 = {}
+    for grid_cell in range(grid_cell_counter):
+
+        m_lambda = lambda_expansions[grid_cell]
+        m_phi = phi_expansions[grid_cell]
+
+        if m_phi and m_lambda:
+            # this grid cell contains a spherical polygon edge
+            # and is targeted for subdivision into a subdgrid
+            grid_key = 'L2_grid_num_{num}'.format(num=grid_cell)
+
+            # generate a meshgrid within the confined boundaries
+            # of the cell at level 1
+
+            # first do some awkward mgrid cell retrieval
+            # by index striding
+
+            retrieval_counter = 0
+            for i in range(level_1_lat.shape[0] - 1):
+                for j in range(level_1_long[0].size - 1):
+                    if retrieval_counter == grid_cell:
+                        # exact identification of the bounds
+                        # of subdivision target cell
+                        top_lambda_bound = level_1_lat[i][j]
+                        bottom_lambda_bound = level_1_lat[i + 1][j]
+                        left_phi_bound = level_1_long[i][j]
+                        right_phi_bound = level_1_long[i][j + 1]
+
+                        # produce and store the level 2 grid
+                        # to be placed inside the level 1 cell
+                        # that has spherical polygon edges in it
+                        level_2 = np.mgrid[bottom_lambda_bound:top_lambda_bound:complex(m_lambda),
+                                           left_phi_bound:right_phi_bound:complex(m_phi)]
+                        dict_level_2[grid_key] = level_2
+
+                    retrieval_counter += 1
+
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
     # just debugging the first level spherical polygon
