@@ -426,14 +426,20 @@ def cast_subgrids(spherical_polyon,
     l_lambda = np.pi / 10.
     # similarly for longitude at level 1
     l_phi = ( 2 * np.pi ) / 20.
+
+    # we're actually targeting level 2 (which is inside level 1)
+    # eventually will iterate through target_level programmatically
+    # but manual for current stage of dev
+    target_level = 2
+
     for grid_index in range(grid_cell_counter):
         N = edge_count_array[grid_index]
-        lambda_expansions[grid_index] = calc_m_lambda(i=1,
+        lambda_expansions[grid_index] = calc_m_lambda(i=target_level,
                                                       j=1, # not used really
                                                       l_lambda=l_lambda,
                                                       l_phi=l_phi,
                                                       N=N)
-        phi_expansions[grid_index] = calc_m_phi(i=1,
+        phi_expansions[grid_index] = calc_m_phi(i=target_level,
                                                 j=1, # not used really
                                                 l_lambda=l_lambda,
                                                 l_phi=l_phi,
