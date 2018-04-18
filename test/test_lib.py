@@ -1,8 +1,6 @@
 import pytest
 import numpy as np
 from math import sqrt
-import sys
-sys.path.append('..')
 import lib
 
 @pytest.mark.parametrize("A, B, C, D, center, expected", [
