@@ -88,17 +88,27 @@ def test_grid_level_1_edge_count_boundary():
                          (4, 9, 1.0, 4.5, 9.5, 200),
                          (4, 9, 1.0, 4.5, 9.5, 0),
                          ])
-def test_calc_m_lambda(i, j, k, l_lambda, l_phi, N):
-    # since the manuscript defines m_lambda
-    # as the number of cells in the latitude
-    # direction, we should at least ensure
-    # that the result with reasonable
-    # input is always an integer number
-    # of cells
-    result = lib.calc_m_lambda(i=i,
-                               j=j,
-                               l_lambda=l_lambda,
-                               l_phi=l_phi,
-                               N=N)
-    print("result:", result)
-    assert isinstance(result, int)
+class TestGridSubdivisions(object):
+
+    def test_calc_m_lambda(self, i, j, k, l_lambda, l_phi, N):
+        # since the manuscript defines m_lambda
+        # as the number of cells in the latitude
+        # direction, we should at least ensure
+        # that the result with reasonable
+        # input is always an integer number
+        # of cells
+        result = lib.calc_m_lambda(i=i,
+                                   j=j,
+                                   l_lambda=l_lambda,
+                                   l_phi=l_phi,
+                                   N=N)
+        assert isinstance(result, int)
+
+    # similarly for m_phi
+    def test_calc_m_phi(self, i, j, k, l_lambda, l_phi, N):
+        result = lib.calc_m_phi(i=i,
+                                j=j,
+                                l_lambda=l_lambda,
+                                l_phi=l_phi,
+                                N=N)
+        assert isinstance(result, int)

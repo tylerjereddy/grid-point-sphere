@@ -55,7 +55,7 @@ def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
                                                l_phi,
                                                N)
 
-    return m_lambda
+    return int(m_lambda)
 
 def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
     '''
@@ -94,7 +94,7 @@ def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
                                          l_phi,
                                          N)
 
-    return m_phi
+    return int(m_phi)
 
 def _grid_build_coef(k=1.0, l_lambda=1, l_phi=1, N=0):
     # utility function needed by calc_m_lambda and calc_m_phi
