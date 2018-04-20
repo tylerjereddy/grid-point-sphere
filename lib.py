@@ -4,6 +4,86 @@ algorithm implementation described by Li et al. (2017).
 
 import numpy as np
 
+def edge_cross_accounting(level_n_lat,
+                          level_n_long,
+                          N_edges,
+                          grid_cell_edge_counts_level_n,
+                          level_n_grid_cell_counter,
+                          spherical_polyon):
+    '''
+    A utility function to handle some of the
+    accounting work for assessing whether
+    spherical polygon edges are inside
+    certain grid cells, and returning
+    an appropriate data structure with
+    this information.
+    '''
+    for i in range(level_n_lat.shape[0] - 1):
+        # grid cell vertex coords (lambda, phi)
+        # or (latitude, longitude):
+        for j in range(level_n_long[0].size - 1):
+            top_left_corner = np.array([level_n_lat[i][j],
+                                        level_n_long[i][j]])
+            top_right_corner = np.array([level_n_lat[i][j + 1],
+                                        level_n_long[i][j + 1]])
+            bottom_left_corner = np.array([level_n_lat[i + 1][j],
+                                           level_n_long[i + 1][j]])
+            bottom_right_corner = np.array([level_n_lat[i + 1][j + 1],
+                                           level_n_long[i + 1][j + 1]])
+            # convert to Cartesian coords
+            cart_coords = [top_left_corner,
+                          top_right_corner,
+                          bottom_left_corner,
+                          bottom_right_corner]
+
+            for k in range(4):
+                # hard coding unit radius at the moment
+                cart_coords[k] = convert_spherical_array_to_cartesian_array(np.array([1, cart_coords[k][0], cart_coords[k][1]]))
+
+            grid_cell_edge_counts_level_n.append(0)
+            level_n_grid_cell_counter += 1
+            # iterate through the edges (arcs) of the input spherical
+            # polygon & record the presence of the edge inside
+            # this grid cell in the appropriate data structure
+            for edge in range(N_edges):
+                current_index = edge
+                if current_index == N_edges - 1:
+                    next_index = 0
+                else:
+                    next_index = current_index + 1
+
+                point_A = spherical_polyon[current_index]
+                point_B = spherical_polyon[next_index]
+
+                # check for crossing between current
+                # spherical polygon arc and the current
+                # grid cell edges
+                for grid_cell_index in range(4):
+                    current_index = grid_cell_index
+                    if current_index == 3:
+                        next_index = 0
+                    else:
+                        next_index = current_index + 1
+
+                    point_C = cart_coords[current_index]
+                    point_D = cart_coords[next_index]
+
+                    intersect = determine_arc_intersection(point_A,
+                                                           point_B,
+                                                           point_C,
+                                                           point_D,
+                                                           np.zeros((3,)))
+                    if intersect:
+                        # once a spherical polygon edge is found
+                        # to intersect any edge of the grid cell
+                        # we record the presence of that edge
+                        # inside the cell & then move on
+                        # to the next edge of the spherical polygon
+                        grid_cell_edge_counts_level_n[level_n_grid_cell_counter - 1] += 1
+                        break
+
+    return (grid_cell_edge_counts_level_n, level_n_grid_cell_counter)
+
 def convert_spherical_array_to_cartesian_array(spherical_coord_array,angle_measure='radians'):
     '''Take shape (N,3) spherical_coord_array (r,theta,phi) and return an array of the same shape in cartesian coordinate form (x,y,z). Based on the equations provided at: http://en.wikipedia.org/wiki/List_of_common_coordinate_transformations#From_spherical_coordinates
     use radians for the angles by default, degrees if angle_measure == 'degrees' '''
@@ -344,69 +424,14 @@ def cast_subgrids(spherical_polyon,
     N_edges = spherical_polyon.shape[0]
 
     grid_cell_counter = 0
-    for i in range(level_1_lat.shape[0] - 1):
-        # grid cell vertex coords (lambda, phi)
-        # or (latitude, longitude):
-        for j in range(level_1_long[0].size - 1):
-            top_left_corner = np.array([level_1_lat[i][j],
-                                        level_1_long[i][j]])
-            top_right_corner = np.array([level_1_lat[i][j + 1],
-                                        level_1_long[i][j + 1]])
-            bottom_left_corner = np.array([level_1_lat[i + 1][j],
-                                           level_1_long[i + 1][j]])
-            bottom_right_corner = np.array([level_1_lat[i + 1][j + 1],
-                                           level_1_long[i + 1][j + 1]])
-            # convert to Cartesian coords
-            cart_coords = [top_left_corner,
-                          top_right_corner,
-                          bottom_left_corner,
-                          bottom_right_corner]
 
-            for k in range(4):
-                # hard coding unit radius at the moment
-                cart_coords[k] = convert_spherical_array_to_cartesian_array(np.array([1, cart_coords[k][0], cart_coords[k][1]]))
-
-            grid_cell_edge_counts_level_1.append(0)
-            grid_cell_counter += 1
-            # iterate through the edges (arcs) of the input spherical
-            # polygon & record the presence of the edge inside
-            # this grid cell in the appropriate data structure
-            for edge in range(N_edges):
-                current_index = edge
-                if current_index == N_edges - 1:
-                    next_index = 0
-                else:
-                    next_index = current_index + 1
-
-                point_A = spherical_polyon[current_index]
-                point_B = spherical_polyon[next_index]
-
-                # check for crossing between current
-                # spherical polygon arc and the current
-                # grid cell edges
-                for grid_cell_index in range(4):
-                    current_index = grid_cell_index
-                    if current_index == 3:
-                        next_index = 0
-                    else:
-                        next_index = current_index + 1
-
-                    point_C = cart_coords[current_index]
-                    point_D = cart_coords[next_index]
-
-                    intersect = determine_arc_intersection(point_A,
-                                                           point_B,
-                                                           point_C,
-                                                           point_D,
-                                                           np.zeros((3,)))
-                    if intersect:
-                        # once a spherical polygon edge is found
-                        # to intersect any edge of the grid cell
-                        # we record the presence of that edge
-                        # inside the cell & then move on
-                        # to the next edge of the spherical polygon
-                        grid_cell_edge_counts_level_1[grid_cell_counter - 1] += 1
-                        break
+    (grid_cell_edge_counts_level_1,
+    grid_cell_counter) = edge_cross_accounting(level_1_lat,
+                                               level_1_long,
+                                               N_edges,
+                                               grid_cell_edge_counts_level_1,
+                                               grid_cell_counter,
+                                               spherical_polyon)
 
     edge_count_array = np.array(grid_cell_edge_counts_level_1)
 
@@ -497,6 +522,40 @@ def cast_subgrids(spherical_polyon,
                         dict_level_2[grid_key] = level_2
 
                     retrieval_counter += 1
+
+    # start processing level 2 grid data (should eventually
+    # be able to reduce code duplication & combine levels
+    # in a loop)
+
+    grid_cell_edge_counts_level_2 = []
+    L2_grid_cell_counter = 0
+
+    for level_2_grid_key in dict_level_2.keys():
+        # level 2 has many grids
+        # so we iterate through the
+        # cells of each of those grids
+        level_2_grid = dict_level_2[level_2_grid_key]
+
+        # now genrate the level_x_lat and
+        # level_x_long vars like we did with level
+        # 1 previously
+        level_2_lat = level_2_grid[0]
+        level_2_long = level_2_grid[1]
+
+        # try looping over these values in
+        # all the subgrids (but be careful not
+        # to reset values between L2 subgrids)
+        (grid_cell_edge_counts_level_2,
+        L2_grid_cell_counter) = edge_cross_accounting(level_2_lat,
+                                                      level_2_long,
+                                                      N_edges,
+                                                      grid_cell_edge_counts_level_2,
+                                                      L2_grid_cell_counter,
+                                                      spherical_polyon)
+    # now we have the data structure containing
+    # the number of spherical polygon edges
+    # contained within each L2 grid cell
+    grid_cell_edge_counts_level_2 = np.array(grid_cell_edge_counts_level_2)
 
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
