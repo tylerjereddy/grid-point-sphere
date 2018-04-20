@@ -481,6 +481,17 @@ def cast_subgrids(spherical_polyon,
                         # produce and store the level 2 grid
                         # to be placed inside the level 1 cell
                         # that has spherical polygon edges in it
+
+                        # want to include the edges of the original
+                        # cell when subidiving new grid so add
+                        # in those vals accordingly prior
+                        # to grid generation
+                        # NOTE: so far, multiplying x 3 seems
+                        # to be effective in generating more
+                        # reasonable grid structs?
+                        m_lambda *= 3
+                        m_phi *= 3
+
                         level_2 = np.mgrid[bottom_lambda_bound:top_lambda_bound:complex(m_lambda),
                                            left_phi_bound:right_phi_bound:complex(m_phi)]
                         dict_level_2[grid_key] = level_2
