@@ -4,6 +4,94 @@ algorithm implementation described by Li et al. (2017).
 
 import numpy as np
 
+def generate_level_subgrids(dict_level_n,
+                            grid_cell_counter_previous_level,
+                            edge_count_array_previous_level,
+                            target_level,
+                            l_lambda,
+                            l_phi,
+                            level_n_lat,
+                            level_n_long):
+    '''
+    For all levels below level 1,
+    the number of spherical polygon
+    edges contained within grid cells
+    (along with a few other parameters)
+    is used to determine the degree
+    of subdivision into smaller cells.
+    The generation of the set of subgrids
+    at each level below 1 is handled
+    by this function.
+
+    Currently modifies a dict
+    where each key, value pair
+    represents one of the subgrids
+    at the given dict level.
+    '''
+    lambda_expansions = np.zeros(edge_count_array_previous_level.size)
+    phi_expansions = np.zeros(edge_count_array_previous_level.size)
+
+    for grid_index in range(grid_cell_counter_previous_level):
+        N = edge_count_array_previous_level[grid_index]
+        lambda_expansions[grid_index] = calc_m_lambda(i=target_level,
+                                                      j=1, # not used really
+                                                      l_lambda=l_lambda,
+                                                      l_phi=l_phi,
+                                                      N=N)
+        phi_expansions[grid_index] = calc_m_phi(i=target_level,
+                                                j=1, # not used really
+                                                l_lambda=l_lambda,
+                                                l_phi=l_phi,
+                                                N=N)
+
+    for grid_cell in range(grid_cell_counter_previous_level):
+
+        m_lambda = lambda_expansions[grid_cell]
+        m_phi = phi_expansions[grid_cell]
+
+        if m_phi and m_lambda:
+            # this grid cell contains a spherical polygon edge
+            # and is targeted for subdivision into a subdgrid
+            grid_key = 'L{level}_grid_num_{num}'.format(num=grid_cell,
+                                                        level=target_level)
+
+            # generate a meshgrid within the confined boundaries
+            # of the cell at level n
+
+            # first do some awkward mgrid cell retrieval
+            # by index striding
+
+            retrieval_counter = 0
+            for i in range(level_n_lat.shape[0] - 1):
+                for j in range(level_n_long[0].size - 1):
+                    if retrieval_counter == grid_cell:
+                        # exact identification of the bounds
+                        # of subdivision target cell
+                        top_lambda_bound = level_n_lat[i][j]
+                        bottom_lambda_bound = level_n_lat[i + 1][j]
+                        left_phi_bound = level_n_long[i][j]
+                        right_phi_bound = level_n_long[i][j + 1]
+
+                        # produce and store the level n grid
+                        # to be placed inside the level n-1 cell
+                        # that has spherical polygon edges in it
+
+                        # want to include the edges of the original
+                        # cell when subidiving new grid so add
+                        # in those vals accordingly prior
+                        # to grid generation
+                        # NOTE: so far, multiplying x 3 seems
+                        # to be effective in generating more
+                        # reasonable grid structs?
+                        m_lambda *= 3
+                        m_phi *= 3
+
+                        level_n = np.mgrid[bottom_lambda_bound:top_lambda_bound:complex(m_lambda),
+                                           left_phi_bound:right_phi_bound:complex(m_phi)]
+                        dict_level_n[grid_key] = level_n
+
+                    retrieval_counter += 1
+
 def edge_cross_accounting(level_n_lat,
                           level_n_long,
                           N_edges,
@@ -455,73 +543,16 @@ def cast_subgrids(spherical_polyon,
     # we're actually targeting level 2 (which is inside level 1)
     # eventually will iterate through target_level programmatically
     # but manual for current stage of dev
-    target_level = 2
 
-    for grid_index in range(grid_cell_counter):
-        N = edge_count_array[grid_index]
-        lambda_expansions[grid_index] = calc_m_lambda(i=target_level,
-                                                      j=1, # not used really
-                                                      l_lambda=l_lambda,
-                                                      l_phi=l_phi,
-                                                      N=N)
-        phi_expansions[grid_index] = calc_m_phi(i=target_level,
-                                                j=1, # not used really
-                                                l_lambda=l_lambda,
-                                                l_phi=l_phi,
-                                                N=N)
-
-    # start drafting code to generate the level 2 grids
-    # based on requisite level 1 subdivisions calculated
-    # above
-    # undecided on exact data structure -- start experimenting
-    # with a dictionary
     dict_level_2 = {}
-    for grid_cell in range(grid_cell_counter):
-
-        m_lambda = lambda_expansions[grid_cell]
-        m_phi = phi_expansions[grid_cell]
-
-        if m_phi and m_lambda:
-            # this grid cell contains a spherical polygon edge
-            # and is targeted for subdivision into a subdgrid
-            grid_key = 'L2_grid_num_{num}'.format(num=grid_cell)
-
-            # generate a meshgrid within the confined boundaries
-            # of the cell at level 1
-
-            # first do some awkward mgrid cell retrieval
-            # by index striding
-
-            retrieval_counter = 0
-            for i in range(level_1_lat.shape[0] - 1):
-                for j in range(level_1_long[0].size - 1):
-                    if retrieval_counter == grid_cell:
-                        # exact identification of the bounds
-                        # of subdivision target cell
-                        top_lambda_bound = level_1_lat[i][j]
-                        bottom_lambda_bound = level_1_lat[i + 1][j]
-                        left_phi_bound = level_1_long[i][j]
-                        right_phi_bound = level_1_long[i][j + 1]
-
-                        # produce and store the level 2 grid
-                        # to be placed inside the level 1 cell
-                        # that has spherical polygon edges in it
-
-                        # want to include the edges of the original
-                        # cell when subidiving new grid so add
-                        # in those vals accordingly prior
-                        # to grid generation
-                        # NOTE: so far, multiplying x 3 seems
-                        # to be effective in generating more
-                        # reasonable grid structs?
-                        m_lambda *= 3
-                        m_phi *= 3
-
-                        level_2 = np.mgrid[bottom_lambda_bound:top_lambda_bound:complex(m_lambda),
-                                           left_phi_bound:right_phi_bound:complex(m_phi)]
-                        dict_level_2[grid_key] = level_2
-
-                    retrieval_counter += 1
+    generate_level_subgrids(dict_level_n=dict_level_2,
+                            grid_cell_counter_previous_level=grid_cell_counter,
+                            edge_count_array_previous_level=edge_count_array,
+                            target_level=2,
+                            l_lambda=l_lambda,
+                            l_phi=l_phi,
+                            level_n_lat=level_1_lat,
+                            level_n_long=level_1_long)
 
     # start processing level 2 grid data (should eventually
     # be able to reduce code duplication & combine levels
@@ -556,6 +587,27 @@ def cast_subgrids(spherical_polyon,
     # the number of spherical polygon edges
     # contained within each L2 grid cell
     grid_cell_edge_counts_level_2 = np.array(grid_cell_edge_counts_level_2)
+
+    # produce level 3 grid data structure
+    # here we have to loop through each of the level 2 grids
+    # so it is more involved than generating level 2 from the fixed
+    # level 1
+    dict_level_3 = {}
+    for subgrid_num, key in enumerate(dict_level_2.keys()):
+        sub_key = "level_3_subgrid_{num}".format(num=subgrid_num)
+        dict_level_3[sub_key] = {}
+        level_2_grid = dict_level_2[key]
+        level_2_lat = level_2_grid[0]
+        level_2_long = level_2_grid[1]
+
+        generate_level_subgrids(dict_level_n=dict_level_3[sub_key],
+                                grid_cell_counter_previous_level=L2_grid_cell_counter,
+                                edge_count_array_previous_level=grid_cell_edge_counts_level_2,
+                                target_level=3,
+                                l_lambda=l_lambda,
+                                l_phi=l_phi,
+                                level_n_lat=level_2_lat,
+                                level_n_long=level_2_long)
 
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
