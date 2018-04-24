@@ -615,6 +615,42 @@ def cast_subgrids(spherical_polyon,
                                 level_n_long=level_2_long)
         grid_index += N
 
+    # start processing level 3 grid data (should eventually
+    # be able to reduce code duplication & combine levels
+    # in a loop)
+
+    grid_cell_edge_counts_level_3 = []
+    L3_grid_cell_counter = 0
+
+    for level_3_grid_key in sorted(dict_level_3.keys()):
+        # level 3 has many grids
+        # so we iterate through the
+        # cells of each of those grids
+        level_3_grid = dict_level_3[level_3_grid_key]
+        print("level_3_grid:", level_3_grid)
+        if len(level_3_grid) > 0:
+
+            # now genrate the level_x_lat and
+            # level_x_long vars like we did with level
+            # 1 previously
+            level_3_lat = level_3_grid[0]
+            level_3_long = level_3_grid[1]
+
+            # try looping over these values in
+            # all the subgrids (but be careful not
+            # to reset values between L3 subgrids)
+            (grid_cell_edge_counts_level_3,
+            L3_grid_cell_counter) = edge_cross_accounting(level_3_lat,
+                                                          level_3_long,
+                                                          N_edges,
+                                                          grid_cell_edge_counts_level_3,
+                                                          L3_grid_cell_counter,
+                                                          spherical_polyon)
+
+    # now we have the data structure containing
+    # the number of spherical polygon edges
+    # contained within each L2 grid cell
+    grid_cell_edge_counts_level_2 = np.array(grid_cell_edge_counts_level_2)
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
     # just debugging the first level spherical polygon
