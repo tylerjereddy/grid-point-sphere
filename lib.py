@@ -627,30 +627,58 @@ def cast_subgrids(spherical_polyon,
         # so we iterate through the
         # cells of each of those grids
         level_3_grid = dict_level_3[level_3_grid_key]
-        print("level_3_grid:", level_3_grid)
-        if len(level_3_grid) > 0:
+        for key, value in level_3_grid.items():
+            if len(value) > 0:
 
-            # now genrate the level_x_lat and
-            # level_x_long vars like we did with level
-            # 1 previously
-            level_3_lat = level_3_grid[0]
-            level_3_long = level_3_grid[1]
+                # now generate the level_x_lat and
+                # level_x_long vars like we did with level
+                # 1 previously
+                level_3_lat = value[0]
+                level_3_long = value[1]
 
-            # try looping over these values in
-            # all the subgrids (but be careful not
-            # to reset values between L3 subgrids)
-            (grid_cell_edge_counts_level_3,
-            L3_grid_cell_counter) = edge_cross_accounting(level_3_lat,
-                                                          level_3_long,
-                                                          N_edges,
-                                                          grid_cell_edge_counts_level_3,
-                                                          L3_grid_cell_counter,
-                                                          spherical_polyon)
+                # try looping over these values in
+                # all the subgrids (but be careful not
+                # to reset values between L3 subgrids)
+                (grid_cell_edge_counts_level_3,
+                L3_grid_cell_counter) = edge_cross_accounting(level_3_lat,
+                                                              level_3_long,
+                                                              N_edges,
+                                                              grid_cell_edge_counts_level_3,
+                                                              L3_grid_cell_counter,
+                                                              spherical_polyon)
 
     # now we have the data structure containing
     # the number of spherical polygon edges
-    # contained within each L2 grid cell
-    grid_cell_edge_counts_level_2 = np.array(grid_cell_edge_counts_level_2)
+    # contained within each L3 grid cell
+    grid_cell_edge_counts_level_3 = np.array(grid_cell_edge_counts_level_3)
+
+    # produce level 4 grid data structure
+    # here we have to loop through each of the level 3 grids
+    dict_level_4 = {}
+    grid_index = 0
+    for subgrid_num, key in enumerate(sorted(dict_level_3.keys())):
+        sub_key = "level_4_subgrid_{num}".format(num=subgrid_num)
+        dict_level_4[sub_key] = {}
+        level_3_grid = dict_level_3[key]
+        for key, value in level_3_grid.items():
+            if len(value) > 0:
+                level_3_lat = value[0]
+                level_3_long = value[1]
+
+                # iterate over N cells in subgrid
+                N = (level_3_lat.shape[1] - 1) * (level_3_long.shape[1] - 1)
+
+                # TODO: level-appropriate values of l_lambda / l_phi ??
+                generate_level_subgrids(dict_level_n=dict_level_4[sub_key],
+                                        grid_cell_counter_previous_level=N,
+                                        edge_count_array_previous_level=grid_cell_edge_counts_level_3[grid_index:grid_index + N],
+                                        target_level=4,
+                                        l_lambda=l_lambda,
+                                        l_phi=l_phi,
+                                        level_n_lat=level_3_lat,
+                                        level_n_long=level_3_long)
+                grid_index += N
+
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
     # just debugging the first level spherical polygon
