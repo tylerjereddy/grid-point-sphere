@@ -684,3 +684,32 @@ def cast_subgrids(spherical_polyon,
     # just debugging the first level spherical polygon
     # edge containment assessment within grid
     return edge_count_array
+
+def grid_center_point(grid_cell_long_1,
+                      grid_cell_long_2,
+                      grid_cell_lat_1,
+                      grid_cell_lat_2):
+    '''
+    This function should take as input
+    the longitude and latitude coordinates
+    of a given grid cell.
+
+    This function should return the longitude
+    and latitude coordinates of the center
+    of the given grid cell (which is used
+    downstream in the algorithm described
+    in the manuscript).
+
+    As far as I can tell, it should be
+    safe to average the longitude and
+    latitude values to obtain the center
+    coordinate of the grid cell as used
+    in the paper, but we should be cautious
+    given the spherical geometry.
+    '''
+    # NOTE: may have to worry about straddling +/- pi
+    # boundaries for longitude?
+
+    center_long = np.average([grid_cell_long_1, grid_cell_long_2])
+    center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
+    return np.array([center_lat, center_long])
