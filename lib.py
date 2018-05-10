@@ -713,3 +713,107 @@ def grid_center_point(grid_cell_long_1,
     center_long = np.average([grid_cell_long_1, grid_cell_long_2])
     center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
     return np.array([center_lat, center_long])
+
+def determine_first_traversal_point(first_cell_lat_1,
+                                    first_cell_lat_2,
+                                    first_cell_long_1,
+                                    first_cell_long_2,
+                                    list_edges_in_first_cell,
+                                    center):
+    '''
+    Determine if the first grid cell center
+    point on a traversal path is inside
+    or outside the spherical polygon.
+
+    This function aims to implement the
+    algorithm depicted in Figure 4
+    of the manuscript (and described
+    in the paragraph above that Figure).
+
+    The first grid cell on a traversal
+    path MUST contain at least one edge
+    of the spherical polygon.
+
+    Return the string 'inside' if the center
+    of the first grid cell is inside the
+    spherical polygon; otherwise, return
+    the string 'outside.'
+    '''
+    # determine the center (centroid) of the first
+    # grid cell on the traversal path, which the
+    # manuscript describes as O_i
+    first_cell_avg_lat = np.average([first_cell_lat_1,
+                                     first_cell_lat_2])
+    first_cell_avg_long = np.average([first_cell_long_1,
+                                      first_cell_long_2])
+    O_i = np.array([first_cell_avg_lat,
+                    first_cell_avg_long])
+    O_i_Cart = convert_spherical_array_to_cartesian_array(O_i)
+
+    # the manuscript defines AB as a spherical polygon
+    # edge inside the first cell on the traversal path
+    # let's assume that list_edges_in_first_cell is a
+    # data structure where each index contains a shape
+    # (2, 2) set of spherical coordinates respresenting
+    # one of the spherical polygon edges (arcs) contained within
+    # the first cell
+
+    # let's just decide to define AB as the first arc
+    # in list_edges_in_first_cell (shouldn't matter
+    # which one we pick if there are > 1)
+    point_A = list_edges_in_first_cell[0][0]
+    point_B = list_edges_in_first_cell[0][1]
+    point_A_Cart = convert_spherical_array_to_cartesian_array(point_A)
+    point_B_Cart = convert_spherical_array_to_cartesian_array(point_B)
+
+    # the manuscript describes C as the midpoint of AB
+    point_C = np.average(list_edges_in_first_cell[0], axis=0)
+
+    # the manuscript describes O_iC as the arc segment
+    # connecting O_i and C
+    O_iC = np.array([O_i, point_C])
+    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC)
+
+    # now, we want to count the intersections between
+    # O_iC and the spherical polygon edges in the cell
+    intersections = 0
+
+    # start from the second edge (if there is one)
+    # because AB was from the first edge
+    for edge in list_edges_in_first_cell[1:]:
+        # need Cartesian coords for
+        # determine_arc_intersection() function
+        candidate_edge_start = convert_spherical_array_to_cartesian_array(edge[0])
+        candidate_edge_end = convert_spherical_array_to_cartesian_array(edge[1])
+        if determine_arc_intersection(point_A=O_iC_Cartesian[0],
+                                      point_B=O_iC_Cartesian[1],
+                                      point_C=candidate_edge_start,
+                                      point_D=candidate_edge_end,
+                                      center=center):
+            intersections += 1
+
+    # the algorithm also requires that we determine
+    # which side of AB O_i is on
+    w = arc_plane_side(center=center,
+                       point_A=point_A_Cart,
+                       point_B=point_B_Cart,
+                       point_C=O_i_Cart)
+
+    # finally, determine the inclusion property
+    # of O_i and return
+
+    if w > 0:
+        # O_i is on left side of AB
+        if intersections % 2 == 0:
+            # O_i is inside the polygon
+            return 'inside'
+        else:
+            # O_i is outside the polygon
+            return 'outside'
+    else:
+        if intersections % 2 != 0:
+            # O_i is inside the polygon
+            return 'inside'
+        else:
+            # O_i is outside the polygon
+            return 'outside'
