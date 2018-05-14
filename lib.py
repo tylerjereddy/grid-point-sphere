@@ -719,7 +719,8 @@ def determine_first_traversal_point(first_cell_lat_1,
                                     first_cell_long_1,
                                     first_cell_long_2,
                                     list_edges_in_first_cell,
-                                    center):
+                                    center,
+                                    radius):
     '''
     Determine if the first grid cell center
     point on a traversal path is inside
@@ -746,9 +747,11 @@ def determine_first_traversal_point(first_cell_lat_1,
                                      first_cell_lat_2])
     first_cell_avg_long = np.average([first_cell_long_1,
                                       first_cell_long_2])
-    O_i = np.array([first_cell_avg_lat,
-                    first_cell_avg_long])
-    O_i_Cart = convert_spherical_array_to_cartesian_array(O_i)
+    O_i = np.array([[radius,
+                    first_cell_avg_lat,
+                    first_cell_avg_long]])
+
+    O_i_Cart = convert_spherical_array_to_cartesian_array(O_i.copy(), angle_measure='degrees')
 
     # the manuscript defines AB as a spherical polygon
     # edge inside the first cell on the traversal path
@@ -761,18 +764,29 @@ def determine_first_traversal_point(first_cell_lat_1,
     # let's just decide to define AB as the first arc
     # in list_edges_in_first_cell (shouldn't matter
     # which one we pick if there are > 1)
-    point_A = list_edges_in_first_cell[0][0]
-    point_B = list_edges_in_first_cell[0][1]
-    point_A_Cart = convert_spherical_array_to_cartesian_array(point_A)
-    point_B_Cart = convert_spherical_array_to_cartesian_array(point_B)
+    point_A = np.array([radius, 
+                        list_edges_in_first_cell[0][0][0],
+                        list_edges_in_first_cell[0][0][1]])
+
+    point_B = np.array([radius, 
+                        list_edges_in_first_cell[0][1][0],
+                        list_edges_in_first_cell[0][1][1]])
+
+    point_A_Cart = convert_spherical_array_to_cartesian_array(point_A.copy(),
+                                                              angle_measure='degrees')
+    point_B_Cart = convert_spherical_array_to_cartesian_array(point_B.copy(),
+                                                              angle_measure='degrees')
 
     # the manuscript describes C as the midpoint of AB
     point_C = np.average(list_edges_in_first_cell[0], axis=0)
 
     # the manuscript describes O_iC as the arc segment
     # connecting O_i and C
-    O_iC = np.array([O_i, point_C])
-    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC)
+    O_iC = np.concatenate((O_i, np.array([[radius, point_C[0], point_C[1]]])))
+    print("O_iC:", O_iC)
+    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC.copy(),
+                                                                angle_measure='degrees')
+    print("O_iC_Cartesian:", O_iC_Cartesian)
 
     # now, we want to count the intersections between
     # O_iC and the spherical polygon edges in the cell
@@ -783,10 +797,14 @@ def determine_first_traversal_point(first_cell_lat_1,
     for edge in list_edges_in_first_cell[1:]:
         # need Cartesian coords for
         # determine_arc_intersection() function
-        candidate_edge_start = convert_spherical_array_to_cartesian_array(edge[0])
-        candidate_edge_end = convert_spherical_array_to_cartesian_array(edge[1])
-        if determine_arc_intersection(point_A=O_iC_Cartesian[0],
-                                      point_B=O_iC_Cartesian[1],
+        start = np.array([radius, edge[0][0], edge[0][1]])
+        end = np.array([radius, edge[1][0], edge[1][1]])
+        candidate_edge_start = convert_spherical_array_to_cartesian_array(start.copy(),
+                                                                          angle_measure='degrees')
+        candidate_edge_end = convert_spherical_array_to_cartesian_array(end.copy(),
+                                                                          angle_measure='degrees')
+        if determine_arc_intersection(point_A=O_iC_Cartesian[0].ravel(),
+                                      point_B=O_iC_Cartesian[1].ravel(),
                                       point_C=candidate_edge_start,
                                       point_D=candidate_edge_end,
                                       center=center):
@@ -795,9 +813,9 @@ def determine_first_traversal_point(first_cell_lat_1,
     # the algorithm also requires that we determine
     # which side of AB O_i is on
     w = arc_plane_side(center=center,
-                       point_A=point_A_Cart,
-                       point_B=point_B_Cart,
-                       point_C=O_i_Cart)
+                       point_A=point_A_Cart.ravel(),
+                       point_B=point_B_Cart.ravel(),
+                       point_C=O_i_Cart.ravel())
 
     # finally, determine the inclusion property
     # of O_i and return
