@@ -181,9 +181,9 @@ def convert_spherical_array_to_cartesian_array(spherical_coord_array,angle_measu
         spherical_coord_array[...,1] = np.deg2rad(spherical_coord_array[...,1])
         spherical_coord_array[...,2] = np.deg2rad(spherical_coord_array[...,2])
     #now the conversion to Cartesian coords
-    cartesian_coord_array[...,0] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
-    cartesian_coord_array[...,1] = spherical_coord_array[...,0] * np.sin(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
-    cartesian_coord_array[...,2] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,2])
+    cartesian_coord_array[...,0] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.cos(spherical_coord_array[...,2])
+    cartesian_coord_array[...,1] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
+    cartesian_coord_array[...,2] = spherical_coord_array[...,0] * np.sin(spherical_coord_array[...,1])
     return cartesian_coord_array
 
 def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
@@ -713,3 +713,129 @@ def grid_center_point(grid_cell_long_1,
     center_long = np.average([grid_cell_long_1, grid_cell_long_2])
     center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
     return np.array([center_lat, center_long])
+
+def determine_first_traversal_point(first_cell_lat_1,
+                                    first_cell_lat_2,
+                                    first_cell_long_1,
+                                    first_cell_long_2,
+                                    list_edges_in_first_cell,
+                                    center,
+                                    radius):
+    '''
+    Determine if the first grid cell center
+    point on a traversal path is inside
+    or outside the spherical polygon.
+
+    This function aims to implement the
+    algorithm depicted in Figure 4
+    of the manuscript (and described
+    in the paragraph above that Figure).
+
+    The first grid cell on a traversal
+    path MUST contain at least one edge
+    of the spherical polygon.
+
+    Return the string 'inside' if the center
+    of the first grid cell is inside the
+    spherical polygon; otherwise, return
+    the string 'outside.'
+
+    NOTE: this appears to be limited to working
+    for the 'bottom left' grid cell that contains
+    a spherical polygon edge -- so, we likely
+    want to start with a grid cell that has
+    minimized latitude and perhaps West longitude
+    '''
+    # determine the center (centroid) of the first
+    # grid cell on the traversal path, which the
+    # manuscript describes as O_i
+    first_cell_avg_lat = np.average([first_cell_lat_1,
+                                     first_cell_lat_2])
+    first_cell_avg_long = np.average([first_cell_long_1,
+                                      first_cell_long_2])
+    O_i = np.array([[radius,
+                    first_cell_avg_lat,
+                    first_cell_avg_long]])
+
+    O_i_Cart = convert_spherical_array_to_cartesian_array(O_i.copy(), angle_measure='degrees')
+
+    # the manuscript defines AB as a spherical polygon
+    # edge inside the first cell on the traversal path
+    # let's assume that list_edges_in_first_cell is a
+    # data structure where each index contains a shape
+    # (2, 2) set of spherical coordinates respresenting
+    # one of the spherical polygon edges (arcs) contained within
+    # the first cell
+
+    # let's just decide to define AB as the first arc
+    # in list_edges_in_first_cell (shouldn't matter
+    # which one we pick if there are > 1)
+    point_A = np.array([radius, 
+                        list_edges_in_first_cell[0][0][0],
+                        list_edges_in_first_cell[0][0][1]])
+
+    point_B = np.array([radius, 
+                        list_edges_in_first_cell[0][1][0],
+                        list_edges_in_first_cell[0][1][1]])
+
+    point_A_Cart = convert_spherical_array_to_cartesian_array(point_A.copy(),
+                                                              angle_measure='degrees')
+    point_B_Cart = convert_spherical_array_to_cartesian_array(point_B.copy(),
+                                                              angle_measure='degrees')
+
+    # the manuscript describes C as the midpoint of AB
+    point_C = np.average(list_edges_in_first_cell[0], axis=0)
+
+    # the manuscript describes O_iC as the arc segment
+    # connecting O_i and C
+    O_iC = np.concatenate((O_i, np.array([[radius, point_C[0], point_C[1]]])))
+    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC.copy(),
+                                                                angle_measure='degrees')
+
+    # now, we want to count the intersections between
+    # O_iC and the spherical polygon edges in the cell
+    intersections = 0
+
+    # start from the second edge (if there is one)
+    # because AB was from the first edge
+    for edge in list_edges_in_first_cell[1:]:
+        # need Cartesian coords for
+        # determine_arc_intersection() function
+        start = np.array([radius, edge[0][0], edge[0][1]])
+        end = np.array([radius, edge[1][0], edge[1][1]])
+        candidate_edge_start = convert_spherical_array_to_cartesian_array(start.copy(),
+                                                                          angle_measure='degrees')
+        candidate_edge_end = convert_spherical_array_to_cartesian_array(end.copy(),
+                                                                          angle_measure='degrees')
+        if determine_arc_intersection(point_A=O_iC_Cartesian[0].ravel(),
+                                      point_B=O_iC_Cartesian[1].ravel(),
+                                      point_C=candidate_edge_start,
+                                      point_D=candidate_edge_end,
+                                      center=center):
+            intersections += 1
+
+    # the algorithm also requires that we determine
+    # which side of AB O_i is on
+    w = arc_plane_side(center=center,
+                       point_A=point_A_Cart.ravel(),
+                       point_B=point_B_Cart.ravel(),
+                       point_C=O_i_Cart.ravel())
+
+    # finally, determine the inclusion property
+    # of O_i and return
+
+    if w > 0:
+        # O_i is on left side of AB
+        if intersections % 2 == 0:
+            # O_i is inside the polygon
+            return 'inside'
+        else:
+            # O_i is outside the polygon
+            return 'outside'
+    else:
+        if intersections % 2 != 0:
+            # O_i is inside the polygon
+            return 'inside'
+        else:
+            # O_i is outside the polygon
+            return 'outside'

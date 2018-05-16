@@ -112,3 +112,85 @@ class TestGridSubdivisions(object):
                                 l_phi=l_phi,
                                 N=N)
         assert isinstance(result, int)
+
+@pytest.mark.parametrize("first_cell_lat_1,"
+                        "first_cell_lat_2,"
+                        "first_cell_long_1,"
+                        "first_cell_long_2,"
+                        "list_edges_in_first_cell,"
+                        "center,"
+                        "radius,"
+                        "expected", [
+                         # the first case divides
+                         # the sphere into 16
+                         # grid cells, picks one
+                         # of these cells & encloses
+                         # the center point of that cell
+                         # in a small spherical triangle
+                         # as defined by all 3 of its arcs
+                         # so, the function should determine
+                         # that the center point is inside
+                         # the spherical polygon
+                         (0, 45, 180, 90,
+                         [np.array([[10, 90],
+                                    [10, 180]]),
+                          np.array([[10, 90],
+                                    [65, 135]]),
+                          np.array([[10, 180],
+                                    [65, 135]])],
+                          np.zeros(3,),
+                          1.0,
+                          'inside'),
+                         # for the second case, use
+                         # the same system, but move
+                         # the tip of the spherical
+                         # triangle such that the
+                         # grid center point is
+                         # excluded
+                         (0, 45, 180, 90,
+                         [np.array([[10, 90],
+                                    [10, 180]]),
+                          # use a really narrow
+                          # rise to exclude grid
+                          # cell center
+                          np.array([[10, 90],
+                                    [11, 89]]),
+                          np.array([[10, 180],
+                                    [11, 89]])],
+                          np.zeros(3,),
+                          1.0,
+                          'outside'),
+                         ])
+def test_first_traversal_determination(first_cell_lat_1,
+                                       first_cell_lat_2,
+                                       first_cell_long_1,
+                                       first_cell_long_2,
+                                       list_edges_in_first_cell,
+                                       center,
+                                       radius,
+                                       expected):
+    # NOTE: it seems that we need to use the
+    # "bottom left" grid cell (that contains
+    # a spherical polygon edge) for this function
+    # to work properly, although this does not
+    # seem to be articulated clearly in the article
+    # this limits the range of valid test cases
+    # that may be used above
+
+    # test for the function that implements
+    # the algorithm depicted in Figure 4
+    # of the manuscript
+
+    # verify proper determination of a point
+    # inside / outside a spherical polygon
+    # based on various arcs in the grid cell
+    # this approach is used only for the first
+    # grid cells parsed on a given grid
+    actual = lib.determine_first_traversal_point(first_cell_lat_1,
+                                                 first_cell_lat_2,
+                                                 first_cell_long_1,
+                                                 first_cell_long_2,
+                                                 list_edges_in_first_cell,
+                                                 center,
+                                                 radius)
+    assert actual == expected
