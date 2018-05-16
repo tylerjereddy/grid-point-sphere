@@ -144,17 +144,19 @@ class TestGridSubdivisions(object):
                          # for the second case, use
                          # the same system, but move
                          # the tip of the spherical
-                         # triangle below the equator
-                         # such that the center of the
-                         # grid cell is no longer
-                         # contained within it
+                         # triangle such that the
+                         # grid center point is
+                         # excluded
                          (0, 45, 180, 90,
                          [np.array([[10, 90],
                                     [10, 180]]),
+                          # use a really narrow
+                          # rise to exclude grid
+                          # cell center
                           np.array([[10, 90],
-                                    [-65, 135]]),
+                                    [11, 89]]),
                           np.array([[10, 180],
-                                    [-65, 135]])],
+                                    [11, 89]])],
                           np.zeros(3,),
                           1.0,
                           'outside'),
@@ -167,6 +169,14 @@ def test_first_traversal_determination(first_cell_lat_1,
                                        center,
                                        radius,
                                        expected):
+    # NOTE: it seems that we need to use the
+    # "bottom left" grid cell (that contains
+    # a spherical polygon edge) for this function
+    # to work properly, although this does not
+    # seem to be articulated clearly in the article
+    # this limits the range of valid test cases
+    # that may be used above
+
     # test for the function that implements
     # the algorithm depicted in Figure 4
     # of the manuscript

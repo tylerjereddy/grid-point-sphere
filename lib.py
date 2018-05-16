@@ -181,9 +181,9 @@ def convert_spherical_array_to_cartesian_array(spherical_coord_array,angle_measu
         spherical_coord_array[...,1] = np.deg2rad(spherical_coord_array[...,1])
         spherical_coord_array[...,2] = np.deg2rad(spherical_coord_array[...,2])
     #now the conversion to Cartesian coords
-    cartesian_coord_array[...,0] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
-    cartesian_coord_array[...,1] = spherical_coord_array[...,0] * np.sin(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
-    cartesian_coord_array[...,2] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,2])
+    cartesian_coord_array[...,0] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.cos(spherical_coord_array[...,2])
+    cartesian_coord_array[...,1] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
+    cartesian_coord_array[...,2] = spherical_coord_array[...,0] * np.sin(spherical_coord_array[...,1])
     return cartesian_coord_array
 
 def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
@@ -739,6 +739,12 @@ def determine_first_traversal_point(first_cell_lat_1,
     of the first grid cell is inside the
     spherical polygon; otherwise, return
     the string 'outside.'
+
+    NOTE: this appears to be limited to working
+    for the 'bottom left' grid cell that contains
+    a spherical polygon edge -- so, we likely
+    want to start with a grid cell that has
+    minimized latitude and perhaps West longitude
     '''
     # determine the center (centroid) of the first
     # grid cell on the traversal path, which the
@@ -783,10 +789,8 @@ def determine_first_traversal_point(first_cell_lat_1,
     # the manuscript describes O_iC as the arc segment
     # connecting O_i and C
     O_iC = np.concatenate((O_i, np.array([[radius, point_C[0], point_C[1]]])))
-    print("O_iC:", O_iC)
     O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC.copy(),
                                                                 angle_measure='degrees')
-    print("O_iC_Cartesian:", O_iC_Cartesian)
 
     # now, we want to count the intersections between
     # O_iC and the spherical polygon edges in the cell
