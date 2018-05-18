@@ -1,6 +1,7 @@
 # grid-point-sphere
 
 [![Travis CI](https://travis-ci.org/tylerjereddy/grid-point-sphere.svg?branch=master)](https://travis-ci.org/tylerjereddy/grid-point-sphere)
+[![codecov](https://codecov.io/gh/tylerjereddy/grid-point-sphere/branch/master/graph/badge.svg)](https://codecov.io/gh/tylerjereddy/grid-point-sphere)
 
 Spherical Point in Polygon Implementation
 
