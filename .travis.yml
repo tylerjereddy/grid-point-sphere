@@ -15,6 +15,8 @@ install:
   - conda create -q -n pyenv libgfortran python=$TRAVIS_PYTHON_VERSION numpy=1.13 scipy=1.0 pytest=3.2.1 pytest-cov=2.5.1 pyyaml=3.12
   - source activate pyenv
   - conda config --add channels conda-forge
+  - conda install codecov
   - chmod +x ./
 script:
   - pytest --cov=lib
+  - codecov
