@@ -17,4 +17,4 @@ install:
   - conda config --add channels conda-forge
   - chmod +x ./
 script:
-  - pytest
+  - pytest --cov=lib
