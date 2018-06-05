@@ -194,3 +194,18 @@ def test_first_traversal_determination(first_cell_lat_1,
                                                  center,
                                                  radius)
     assert actual == expected
+
+@pytest.mark.parametrize("center_1_property,"
+                         "intersection_count,"
+                         "expected", [
+                         ('inside', 1, 'outside'),
+                         ('inside', 8, 'inside'),
+                         ('outside', 3, 'inside'),
+                         ('outside', 6, 'outside'),
+                         ])
+def test_inclusion_property(center_1_property,
+                            intersection_count,
+                            expected):
+    result = lib.inclusion_property(center_1_property=center_1_property,
+                                    intersection_count=intersection_count)
+    assert result == expected
