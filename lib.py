@@ -710,6 +710,18 @@ def grid_center_point(grid_cell_long_1,
     # NOTE: may have to worry about straddling +/- pi
     # boundaries for longitude?
 
+    # check input longitude and latitude values
+    # raise an appropriate exception if the values
+    # fall outside the boundaries specified in the
+    # manuscript
+    for longi in [grid_cell_long_1, grid_cell_long_2]:
+        if longi < -180 or longi > 180:
+            raise ValueError
+
+    for lat in [grid_cell_lat_1, grid_cell_lat_2]:
+        if lat < -90 or lat > 90:
+            raise ValueError
+
     center_long = np.average([grid_cell_long_1, grid_cell_long_2])
     center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
     return np.array([center_lat, center_long])
