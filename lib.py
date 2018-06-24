@@ -707,8 +707,6 @@ def grid_center_point(grid_cell_long_1,
     in the paper, but we should be cautious
     given the spherical geometry.
     '''
-    # NOTE: may have to worry about straddling +/- pi
-    # boundaries for longitude?
 
     # check input longitude and latitude values
     # raise an appropriate exception if the values
@@ -722,7 +720,20 @@ def grid_center_point(grid_cell_long_1,
         if lat < -90 or lat > 90:
             raise ValueError
 
+    # handling of antipodal points would be ambiguous so raise
+    # appropriate error
+    long_diff = grid_cell_long_2 - grid_cell_long_1
+    if abs(long_diff) == 180:
+            raise ValueError("antipodal points")
+    elif abs(long_diff) == 0 and abs(grid_cell_lat_2 - grid_cell_lat_1) == 180:
+        raise ValueError("antipodal points")
+
     center_long = np.average([grid_cell_long_1, grid_cell_long_2])
+
+    # handle straddling over +/- pi boundaries for longitude
+    if long_diff < -180:
+        center_long += 180
+
     center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
     return np.array([center_lat, center_long])
 

@@ -232,11 +232,31 @@ class TestGridCenterPoint(object):
                                   grid_cell_lat_1=lat_1,
                                   grid_cell_lat_2=lat_2)
 
+    @pytest.mark.parametrize("long_1, long_2, lat_1, lat_2", [
+                              (180, 0, 0, 0),
+                              (-180, 0, 30, 30),
+                              (-90, 90, 20, 20),
+                              (0, 0, 90, -90),
+                              ])
+    def test_antipode_handling(self, long_1, long_2, lat_1, lat_2):
+        # an appropriate error should be raised if trying to handle
+        # antipodes, for which the midpoint would be ambiguous
+        with pytest.raises(ValueError):
+            lib.grid_center_point(grid_cell_long_1=long_1,
+                                  grid_cell_long_2=long_2,
+                                  grid_cell_lat_1=lat_1,
+                                  grid_cell_lat_2=lat_2)
+
+
     @pytest.mark.parametrize("long_1, long_2, lat_1, lat_2, expected", [
                               (-180, -174, 40, 50,
                               np.array([45, -177])),
                               (178, -178, 40, 50,
                               np.array([45, 180])),
+                              (5, -5, 40, 50,
+                              np.array([45, 0])),
+                              (-20, 90, 0, 0,
+                              np.array([0, 35])),
                               ])
     def test_centers(self, long_1, long_2,
                            lat_1, lat_2,
