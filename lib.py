@@ -339,6 +339,10 @@ def arc_plane_side(center,
     returns w: > 0 on left side of plane;
                < 0 on right side of plane
     '''
+    # TODO: if points A and B are antipodes
+    # they define an infinite set of great
+    # circle planes, so we may need error
+    # handling
     w = np.dot(np.cross((point_A - center),
                         (point_B - point_A)),
                point_C - point_A)
@@ -768,6 +772,10 @@ def determine_first_traversal_point(first_cell_lat_1,
     a spherical polygon edge -- so, we likely
     want to start with a grid cell that has
     minimized latitude and perhaps West longitude
+
+    NOTE 2: actually, looks like we just have to be
+    very careful to discern CCW vs. CW ordering on 
+    list_edges_in_first_cell from the polygon
     '''
     # determine the center (centroid) of the first
     # grid cell on the traversal path, which the
