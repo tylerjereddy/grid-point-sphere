@@ -112,6 +112,9 @@ def edge_cross_accounting(level_n_lat,
     an appropriate data structure with
     this information.
     '''
+    # handy to have Cartesian coords of each
+    # cell for plotting
+    cart_coords_cells = []
     for i in range(level_n_lat.shape[0] - 1):
         # grid cell vertex coords (lambda, phi)
         # or (latitude, longitude):
@@ -129,6 +132,8 @@ def edge_cross_accounting(level_n_lat,
                            top_right_corner,
                            bottom_right_corner,
                            bottom_left_corner]
+
+            cart_coords_cells.append(cart_coords)
 
             for k in range(4):
                 # hard coding unit radius at the moment
@@ -280,7 +285,8 @@ def edge_cross_accounting(level_n_lat,
                                         level_n_grid_cell_counter - 1] += 1
                         break
 
-    return (grid_cell_edge_counts_level_n, level_n_grid_cell_counter)
+    return (grid_cell_edge_counts_level_n, level_n_grid_cell_counter,
+            np.array(cart_coords_cells))
 
 
 def convert_spherical_array_to_cartesian_array(spherical_coord_array,
@@ -698,13 +704,12 @@ def cast_subgrids(spherical_polyon,
     grid_cell_counter = 0
 
     (grid_cell_edge_counts_level_1,
-        grid_cell_counter) = edge_cross_accounting(
-                                            level_1_lat,
-                                            level_1_long,
-                                            N_edges,
-                                            grid_cell_edge_counts_level_1,
-                                            grid_cell_counter,
-                                            spherical_polyon)
+    grid_cell_counter, cart_coords_L1) = edge_cross_accounting(level_1_lat,
+                                               level_1_long,
+                                               N_edges,
+                                               grid_cell_edge_counts_level_1,
+                                               grid_cell_counter,
+                                               spherical_polyon)
 
     edge_count_array = np.array(grid_cell_edge_counts_level_1)
 
@@ -762,13 +767,12 @@ def cast_subgrids(spherical_polyon,
         # all the subgrids (but be careful not
         # to reset values between L2 subgrids)
         (grid_cell_edge_counts_level_2,
-            L2_grid_cell_counter) = edge_cross_accounting(
-                                           level_2_lat,
-                                           level_2_long,
-                                           N_edges,
-                                           grid_cell_edge_counts_level_2,
-                                           L2_grid_cell_counter,
-                                           spherical_polyon)
+        L2_grid_cell_counter, cart_coords_L2) = edge_cross_accounting(level_2_lat,
+                                                      level_2_long,
+                                                      N_edges,
+                                                      grid_cell_edge_counts_level_2,
+                                                      L2_grid_cell_counter,
+                                                      spherical_polyon)
     # now we have the data structure containing
     # the number of spherical polygon edges
     # contained within each L2 grid cell
@@ -830,13 +834,12 @@ def cast_subgrids(spherical_polyon,
                 # all the subgrids (but be careful not
                 # to reset values between L3 subgrids)
                 (grid_cell_edge_counts_level_3,
-                    L3_grid_cell_counter) = edge_cross_accounting(
-                                                level_3_lat,
-                                                level_3_long,
-                                                N_edges,
-                                                grid_cell_edge_counts_level_3,
-                                                L3_grid_cell_counter,
-                                                spherical_polyon)
+                L3_grid_cell_counter, cart_coords_L3) = edge_cross_accounting(level_3_lat,
+                                                              level_3_long,
+                                                              N_edges,
+                                                              grid_cell_edge_counts_level_3,
+                                                              L3_grid_cell_counter,
+                                                              spherical_polyon)
 
     # now we have the data structure containing
     # the number of spherical polygon edges
@@ -923,7 +926,7 @@ def cast_subgrids(spherical_polyon,
     # in final version of function;
     # just debugging the first level spherical polygon
     # edge containment assessment within grid
-    return edge_count_array
+    return (edge_count_array, cart_coords_L1)
 
 
 def grid_center_point(grid_cell_long_1,
