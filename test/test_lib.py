@@ -4,6 +4,54 @@ from numpy.testing import assert_almost_equal
 from math import sqrt
 import lib
 
+@pytest.mark.parametrize("A, B, C, center, expected", [
+    # define a plane that divides unit sphere into
+    # East / West "hemispheres"
+    # then probe points at extreme East / West
+
+    # NOTE: I'm not sure if human intuition for
+    # "right" vs. "left" here make sense--after all,
+    # you could just rotate the sphere perspective, but
+    # we at least test for consistency in the code
+    (np.array([0, 1, 0]),
+     np.array([0, 0, 1]),
+     np.array([1, 0, 0]), # query point on "left"
+     np.zeros((1, 3)),
+     "left"),
+    # checking the antipode of the query point should
+    # produce a "right" side result (opposite of above)
+    (np.array([0, 1, 0]),
+     np.array([0, 0, 1]),
+     np.array([-1, 0, 0]), # query point on "right"
+     np.zeros((1, 3)),
+     "right"),
+    # with a basic "orientation" for left / right relative
+    # to viewer established above, move the query point to
+    # "front right"
+    (np.array([0, 1, 0]),
+     np.array([0, 0, 1]),
+     np.array([-np.sqrt(2) / 2., 
+               np.sqrt(2) / 2., 0]),
+     np.zeros((1, 3)),
+     "right"),
+    # same for "back left"
+    (np.array([0, 1, 0]),
+     np.array([0, 0, 1]),
+     np.array([np.sqrt(2) / 2., 
+               -np.sqrt(2) / 2., 0]),
+     np.zeros((1, 3)),
+     "left"),
+    ])
+def test_arc_plane_side(A, B, C, center, expected):
+    # need to be able to reliably determine
+    # which side of a great circle plane a point
+    # on the surface of a sphere is on
+    actual = lib.arc_plane_side(center, A, B, C)
+    if expected == 'right':
+        assert actual < 0
+    else:
+        assert actual > 0
+
 @pytest.mark.parametrize("A, B, C, D, center, expected", [
                          # a North to South arc through + y
                          # should intersect a West to East arc
@@ -122,6 +170,17 @@ class TestGridSubdivisions(object):
                         "center,"
                         "radius,"
                         "expected", [
+                         # lat = 0, lon = 90 is +y axis of
+                         # sphere facing viewer with x = -1
+                         # on right and x = +1 on left
+                         # or 180 lon on right and 0 lon on left
+                         # +90 lat is +1 Z (up)
+
+                         # careful with clockwise and
+                         # CCW internal conventions!!!
+                         # walking CCW along polygon edges, inside means on your
+                         # left!
+
                          # the first case divides
                          # the sphere into 16
                          # grid cells, picks one
@@ -132,13 +191,14 @@ class TestGridSubdivisions(object):
                          # so, the function should determine
                          # that the center point is inside
                          # the spherical polygon
-                         (0, 45, 180, 90,
+
+                         (0, 45, 90, 180,
                          [np.array([[10, 90],
                                     [10, 180]]),
-                          np.array([[10, 90],
-                                    [65, 135]]),
                           np.array([[10, 180],
-                                    [65, 135]])],
+                                    [65, 135]]),
+                          np.array([[65, 135],
+                                    [10, 90]])],
                           np.zeros(3,),
                           1.0,
                           'inside'),
@@ -148,19 +208,42 @@ class TestGridSubdivisions(object):
                          # triangle such that the
                          # grid center point is
                          # excluded
-                         (0, 45, 180, 90,
+                         (0, 45, 90, 180,
                          [np.array([[10, 90],
                                     [10, 180]]),
-                          # use a really narrow
-                          # rise to exclude grid
-                          # cell center
-                          np.array([[10, 90],
-                                    [11, 89]]),
+                          # use a small rise
+                          # to exclude grid center
                           np.array([[10, 180],
-                                    [11, 89]])],
+                                    [15, 135]]), # under center
+                          np.array([[15, 135],
+                                    [10, 90]])],
                           np.zeros(3,),
                           1.0,
                           'outside'),
+                         # need a test case where O_i is
+                         # on the right side of AB and
+                         # outside the spherical polygon
+                         (0, 45, 90, 180,
+                         [np.array([[10, 90],
+                                    [65, 110]]),
+                          np.array([[65, 110],
+                                    [20, 45]]),
+                          np.array([[20, 45],
+                                    [10, 90]])],
+                          np.zeros(3,),
+                          1.0,
+                          'outside'),
+                         # and now with O_i to the right
+                         # of AB and inside the spherical polygon
+                         (0, 45, 90, 180,
+                         [np.array([[10, 90],
+                                    [50, 120]]),
+                         # intersect Oi_C line, trigger inclusion
+                          np.array([[50, 120],
+                                    [10, 120 ]])],
+                          np.zeros(3,),
+                          1.0,
+                          'inside'),
                          ])
 def test_first_traversal_determination(first_cell_lat_1,
                                        first_cell_lat_2,
