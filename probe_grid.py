@@ -12,6 +12,7 @@ import numpy as np
 import lib
 import pyximport; pyximport.install()
 from slerp import _slerp as slerp
+import copy
 
 # the input will be a spherical triangle that
 # covers exactly 1/8 the surface area of the unit
@@ -56,6 +57,55 @@ ax.scatter(cartesian_coords_cells_L1[...,0],
            cartesian_coords_cells_L1[...,2],
            marker='.',
            color='black')
+
+# color code cells by amount of spherical
+# polygon edges contained
+# here I just happen to know the max is 2
+colors = {0: 'black', 1: 'orange', 2: 'red'}
+# we don't want to plot over edges already plotted
+# with a higher containment count, so keep track of this
+dict_edge_data = {}
+counter = 0
+for cell, edge_count in zip(cartesian_coords_cells_L1, edge_count_array_L1):
+    # parse all four edges of the cell
+    cycle_cell = np.empty((5, 3))
+    cycle_cell[:4, ...] = cell
+    cycle_cell[4, ...] = cell[0, ...]
+    for i in range(4):
+        edge = cycle_cell[i:i+2]
+        dict_edge_data[counter] = {'edge': edge,
+                                   'edge_count': edge_count}
+        counter += 1
+
+# now move through dict_edge_data and plot edges using
+# color that matches higher spherical polygon edge containment
+# count only
+internal_dict = copy.deepcopy(dict_edge_data)
+iter_count = 0
+total_iter = len(dict_edge_data)
+plot = True
+
+for key, edge_entry in dict_edge_data.items():
+    current_edge = edge_entry['edge']
+    current_edge_count = edge_entry['edge_count']
+
+    for subkey, subentry in internal_dict.items():
+        reference_edge = subentry['edge']
+        reference_count = subentry['edge_count']
+        if (np.allclose(current_edge, reference_edge) or
+            np.allclose(current_edge, reference_edge[::-1])):
+            if current_edge_count < reference_count:
+                plot = False
+                break
+    if plot:
+        ax.plot(current_edge[..., 0],
+                current_edge[..., 1],
+                current_edge[..., 2],
+                color=colors[current_edge_count])
+    plot = True
+    iter_count += 1
+    print(iter_count, 'of', total_iter, 'iterations')
+
 polygon = Poly3DCollection([interpolated_polygon], alpha=1.0)
 polygon.set_color('purple')
 ax.add_collection3d(polygon)

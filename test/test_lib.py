@@ -111,7 +111,7 @@ def test_grid_cells_level_1_shape():
                              [0,1,0],
                              [1,0,0]])
 
-    result = lib.cast_subgrids(test_polygon).size
+    result = lib.cast_subgrids(test_polygon)[0].size
 
     assert result == cells_expected
 
@@ -127,8 +127,8 @@ def test_grid_level_1_edge_count_boundary():
                              [0,np.sqrt(2) / 2., np.sqrt(2) / 2.],
                              [np.sqrt(2) / 2., 0, np.sqrt(2) / 2.]])
 
-    result = lib.cast_subgrids(test_polygon)
-    max_allowed = result.size / 8.
+    result = lib.cast_subgrids(test_polygon)[0]
+    max_allowed = int(result.size / 2.)
 
     assert np.count_nonzero(result) < max_allowed
 
