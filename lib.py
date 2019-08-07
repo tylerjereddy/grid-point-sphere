@@ -4,6 +4,7 @@ algorithm implementation described by Li et al. (2017).
 
 import numpy as np
 
+
 def generate_level_subgrids(dict_level_n,
                             grid_cell_counter_previous_level,
                             edge_count_array_previous_level,
@@ -34,12 +35,12 @@ def generate_level_subgrids(dict_level_n,
     for grid_index in range(grid_cell_counter_previous_level):
         N = edge_count_array_previous_level[grid_index]
         lambda_expansions[grid_index] = calc_m_lambda(i=target_level,
-                                                      j=1, # not used really
+                                                      j=1,  # not used really
                                                       l_lambda=l_lambda,
                                                       l_phi=l_phi,
                                                       N=N)
         phi_expansions[grid_index] = calc_m_phi(i=target_level,
-                                                j=1, # not used really
+                                                j=1,  # not used really
                                                 l_lambda=l_lambda,
                                                 l_phi=l_phi,
                                                 N=N)
@@ -86,11 +87,14 @@ def generate_level_subgrids(dict_level_n,
                         m_lambda *= 3
                         m_phi *= 3
 
-                        level_n = np.mgrid[bottom_lambda_bound:top_lambda_bound:complex(m_lambda),
-                                           left_phi_bound:right_phi_bound:complex(m_phi)]
+                        level_n = np.mgrid[bottom_lambda_bound:
+                                           top_lambda_bound:complex(m_lambda),
+                                           left_phi_bound:right_phi_bound:
+                                           complex(m_phi)]
                         dict_level_n[grid_key] = level_n
 
                     retrieval_counter += 1
+
 
 def edge_cross_accounting(level_n_lat,
                           level_n_long,
@@ -120,13 +124,15 @@ def edge_cross_accounting(level_n_lat,
                                            level_n_long[i + 1][j + 1]])
             # convert to Cartesian coords
             cart_coords = [top_left_corner,
-                          top_right_corner,
-                          bottom_left_corner,
-                          bottom_right_corner]
+                           top_right_corner,
+                           bottom_left_corner,
+                           bottom_right_corner]
 
             for k in range(4):
                 # hard coding unit radius at the moment
-                cart_coords[k] = convert_spherical_array_to_cartesian_array(np.array([1, cart_coords[k][0], cart_coords[k][1]]))
+                cart_coords[k] = convert_spherical_array_to_cartesian_array(
+                                    np.array([1, cart_coords[k][0],
+                                              cart_coords[k][1]]))
 
             grid_cell_edge_counts_level_n.append(0)
             level_n_grid_cell_counter += 1
@@ -167,24 +173,44 @@ def edge_cross_accounting(level_n_lat,
                         # we record the presence of that edge
                         # inside the cell & then move on
                         # to the next edge of the spherical polygon
-                        grid_cell_edge_counts_level_n[level_n_grid_cell_counter - 1] += 1
+                        grid_cell_edge_counts_level_n[
+                                    level_n_grid_cell_counter - 1] += 1
                         break
 
     return (grid_cell_edge_counts_level_n, level_n_grid_cell_counter)
 
-def convert_spherical_array_to_cartesian_array(spherical_coord_array,angle_measure='radians'):
-    '''Take shape (N,3) spherical_coord_array (r,theta,phi) and return an array of the same shape in cartesian coordinate form (x,y,z). Based on the equations provided at: http://en.wikipedia.org/wiki/List_of_common_coordinate_transformations#From_spherical_coordinates
-    use radians for the angles by default, degrees if angle_measure == 'degrees' '''
+
+def convert_spherical_array_to_cartesian_array(spherical_coord_array,
+                                               angle_measure='radians'):
+    '''
+    Take shape (N,3) spherical_coord_array (r,theta,phi)
+    and return an array of the same shape in cartesian
+    coordinate form (x,y,z). Based on the equations
+    provided at:
+    http://en.wikipedia.org/wiki/List_of_common_coordinate_transformations
+    #From_spherical_coordinates
+    use radians for the angles by default,
+    degrees if angle_measure == 'degrees'
+    '''
     cartesian_coord_array = np.zeros(spherical_coord_array.shape)
-    #convert to radians if degrees are used in input (prior to Cartesian conversion process)
+    # convert to radians if degrees are used in input
+    # (prior to Cartesian conversion process)
     if angle_measure == 'degrees':
-        spherical_coord_array[...,1] = np.deg2rad(spherical_coord_array[...,1])
-        spherical_coord_array[...,2] = np.deg2rad(spherical_coord_array[...,2])
-    #now the conversion to Cartesian coords
-    cartesian_coord_array[...,0] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.cos(spherical_coord_array[...,2])
-    cartesian_coord_array[...,1] = spherical_coord_array[...,0] * np.cos(spherical_coord_array[...,1]) * np.sin(spherical_coord_array[...,2])
-    cartesian_coord_array[...,2] = spherical_coord_array[...,0] * np.sin(spherical_coord_array[...,1])
+        spherical_coord_array[..., 1] = np.deg2rad(
+                                            spherical_coord_array[..., 1])
+        spherical_coord_array[..., 2] = np.deg2rad(
+                                            spherical_coord_array[..., 2])
+    # now the conversion to Cartesian coords
+    cartesian_coord_array[..., 0] = (spherical_coord_array[..., 0] *
+                                     np.cos(spherical_coord_array[..., 1]) *
+                                     np.cos(spherical_coord_array[..., 2]))
+    cartesian_coord_array[..., 1] = (spherical_coord_array[..., 0] *
+                                     np.cos(spherical_coord_array[..., 1]) *
+                                     np.sin(spherical_coord_array[..., 2]))
+    cartesian_coord_array[..., 2] = (spherical_coord_array[..., 0] *
+                                     np.sin(spherical_coord_array[..., 1]))
     return cartesian_coord_array
+
 
 def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
     '''
@@ -225,6 +251,7 @@ def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
 
     return int(m_lambda)
 
+
 def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
     '''
     From equation 1 in Li et al. (2017)
@@ -264,9 +291,11 @@ def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
 
     return int(m_phi)
 
+
 def _grid_build_coef(k=1.0, l_lambda=1, l_phi=1, N=0):
     # utility function needed by calc_m_lambda and calc_m_phi
     return np.sqrt((k * N) / (l_lambda * l_phi))
+
 
 def inclusion_property(center_1_property,
                        intersection_count):
@@ -302,6 +331,7 @@ def inclusion_property(center_1_property,
             return 'inside'
         else:
             return 'outside'
+
 
 def arc_plane_side(center,
                    point_A,
@@ -347,6 +377,7 @@ def arc_plane_side(center,
                         (point_B - point_A)),
                point_C - point_A)
     return w
+
 
 def determine_arc_intersection(point_A,
                                point_B,
@@ -419,6 +450,7 @@ def determine_arc_intersection(point_A,
 
     return True
 
+
 def cast_grid_level_1():
     '''
     Cast the initial (level 1)
@@ -446,6 +478,8 @@ def cast_grid_level_1():
 
 # NOTE: this function is in
 # the very early stages of dev
+
+
 def cast_subgrids(spherical_polyon,
                   MAXD=4):
     '''
@@ -473,7 +507,6 @@ def cast_subgrids(spherical_polyon,
     # the interactions between
     # spherical polygon edges & grid
     # cells accordingly
-
 
     # I will need an appropriate data
     # structure for storing the values
@@ -518,12 +551,13 @@ def cast_subgrids(spherical_polyon,
     grid_cell_counter = 0
 
     (grid_cell_edge_counts_level_1,
-    grid_cell_counter) = edge_cross_accounting(level_1_lat,
-                                               level_1_long,
-                                               N_edges,
-                                               grid_cell_edge_counts_level_1,
-                                               grid_cell_counter,
-                                               spherical_polyon)
+        grid_cell_counter) = edge_cross_accounting(
+                                            level_1_lat,
+                                            level_1_long,
+                                            N_edges,
+                                            grid_cell_edge_counts_level_1,
+                                            grid_cell_counter,
+                                            spherical_polyon)
 
     edge_count_array = np.array(grid_cell_edge_counts_level_1)
 
@@ -542,7 +576,7 @@ def cast_subgrids(spherical_polyon,
     # a given grid cell at level 1
     l_lambda = np.pi / 10.
     # similarly for longitude at level 1
-    l_phi = ( 2 * np.pi ) / 20.
+    l_phi = (2 * np.pi) / 20.
 
     # we're actually targeting level 2 (which is inside level 1)
     # eventually will iterate through target_level programmatically
@@ -581,12 +615,13 @@ def cast_subgrids(spherical_polyon,
         # all the subgrids (but be careful not
         # to reset values between L2 subgrids)
         (grid_cell_edge_counts_level_2,
-        L2_grid_cell_counter) = edge_cross_accounting(level_2_lat,
-                                                      level_2_long,
-                                                      N_edges,
-                                                      grid_cell_edge_counts_level_2,
-                                                      L2_grid_cell_counter,
-                                                      spherical_polyon)
+            L2_grid_cell_counter) = edge_cross_accounting(
+                                           level_2_lat,
+                                           level_2_long,
+                                           N_edges,
+                                           grid_cell_edge_counts_level_2,
+                                           L2_grid_cell_counter,
+                                           spherical_polyon)
     # now we have the data structure containing
     # the number of spherical polygon edges
     # contained within each L2 grid cell
@@ -609,9 +644,10 @@ def cast_subgrids(spherical_polyon,
         N = (level_2_lat.shape[1] - 1) * (level_2_long.shape[1] - 1)
 
         # TODO: level-appropriate values of l_lambda / l_phi ??
+        k = grid_cell_edge_counts_level_2[grid_index:grid_index + N]
         generate_level_subgrids(dict_level_n=dict_level_3[sub_key],
                                 grid_cell_counter_previous_level=N,
-                                edge_count_array_previous_level=grid_cell_edge_counts_level_2[grid_index:grid_index + N],
+                                edge_count_array_previous_level=k,
                                 target_level=3,
                                 l_lambda=l_lambda,
                                 l_phi=l_phi,
@@ -644,12 +680,13 @@ def cast_subgrids(spherical_polyon,
                 # all the subgrids (but be careful not
                 # to reset values between L3 subgrids)
                 (grid_cell_edge_counts_level_3,
-                L3_grid_cell_counter) = edge_cross_accounting(level_3_lat,
-                                                              level_3_long,
-                                                              N_edges,
-                                                              grid_cell_edge_counts_level_3,
-                                                              L3_grid_cell_counter,
-                                                              spherical_polyon)
+                    L3_grid_cell_counter) = edge_cross_accounting(
+                                                level_3_lat,
+                                                level_3_long,
+                                                N_edges,
+                                                grid_cell_edge_counts_level_3,
+                                                L3_grid_cell_counter,
+                                                spherical_polyon)
 
     # now we have the data structure containing
     # the number of spherical polygon edges
@@ -673,9 +710,10 @@ def cast_subgrids(spherical_polyon,
                 N = (level_3_lat.shape[1] - 1) * (level_3_long.shape[1] - 1)
 
                 # TODO: level-appropriate values of l_lambda / l_phi ??
+                k = grid_cell_edge_counts_level_3[grid_index:grid_index + N]
                 generate_level_subgrids(dict_level_n=dict_level_4[sub_key],
                                         grid_cell_counter_previous_level=N,
-                                        edge_count_array_previous_level=grid_cell_edge_counts_level_3[grid_index:grid_index + N],
+                                        edge_count_array_previous_level=k,
                                         target_level=4,
                                         l_lambda=l_lambda,
                                         l_phi=l_phi,
@@ -688,6 +726,7 @@ def cast_subgrids(spherical_polyon,
     # just debugging the first level spherical polygon
     # edge containment assessment within grid
     return edge_count_array
+
 
 def grid_center_point(grid_cell_long_1,
                       grid_cell_long_2,
@@ -728,7 +767,7 @@ def grid_center_point(grid_cell_long_1,
     # appropriate error
     long_diff = grid_cell_long_2 - grid_cell_long_1
     if abs(long_diff) == 180:
-            raise ValueError("antipodal points")
+        raise ValueError("antipodal points")
     elif abs(long_diff) == 0 and abs(grid_cell_lat_2 - grid_cell_lat_1) == 180:
         raise ValueError("antipodal points")
 
@@ -740,6 +779,7 @@ def grid_center_point(grid_cell_long_1,
 
     center_lat = np.average([grid_cell_lat_1, grid_cell_lat_2])
     return np.array([center_lat, center_long])
+
 
 def determine_first_traversal_point(first_cell_lat_1,
                                     first_cell_lat_2,
@@ -774,7 +814,7 @@ def determine_first_traversal_point(first_cell_lat_1,
     minimized latitude and perhaps West longitude
 
     NOTE 2: actually, looks like we just have to be
-    very careful to discern CCW vs. CW ordering on 
+    very careful to discern CCW vs. CW ordering on
     list_edges_in_first_cell from the polygon
     '''
     # determine the center (centroid) of the first
@@ -788,7 +828,9 @@ def determine_first_traversal_point(first_cell_lat_1,
                     first_cell_avg_lat,
                     first_cell_avg_long]])
 
-    O_i_Cart = convert_spherical_array_to_cartesian_array(O_i.copy(), angle_measure='degrees')
+    O_i_Cart = convert_spherical_array_to_cartesian_array(
+                                              O_i.copy(),
+                                              angle_measure='degrees')
 
     # the manuscript defines AB as a spherical polygon
     # edge inside the first cell on the traversal path
@@ -801,27 +843,31 @@ def determine_first_traversal_point(first_cell_lat_1,
     # let's just decide to define AB as the first arc
     # in list_edges_in_first_cell (shouldn't matter
     # which one we pick if there are > 1)
-    point_A = np.array([radius, 
+    point_A = np.array([radius,
                         list_edges_in_first_cell[0][0][0],
                         list_edges_in_first_cell[0][0][1]])
 
-    point_B = np.array([radius, 
+    point_B = np.array([radius,
                         list_edges_in_first_cell[0][1][0],
                         list_edges_in_first_cell[0][1][1]])
 
-    point_A_Cart = convert_spherical_array_to_cartesian_array(point_A.copy(),
-                                                              angle_measure='degrees')
-    point_B_Cart = convert_spherical_array_to_cartesian_array(point_B.copy(),
-                                                              angle_measure='degrees')
+    point_A_Cart = convert_spherical_array_to_cartesian_array(
+                                                 point_A.copy(),
+                                                 angle_measure='degrees')
+    point_B_Cart = convert_spherical_array_to_cartesian_array(
+                                                 point_B.copy(),
+                                                 angle_measure='degrees')
 
     # the manuscript describes C as the midpoint of AB
     point_C = np.average(list_edges_in_first_cell[0], axis=0)
 
     # the manuscript describes O_iC as the arc segment
     # connecting O_i and C
-    O_iC = np.concatenate((O_i, np.array([[radius, point_C[0], point_C[1]]])))
-    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(O_iC.copy(),
-                                                                angle_measure='degrees')
+    O_iC = np.concatenate((O_i,
+                           np.array([[radius, point_C[0], point_C[1]]])))
+    O_iC_Cartesian = convert_spherical_array_to_cartesian_array(
+                                                    O_iC.copy(),
+                                                    angle_measure='degrees')
 
     # now, we want to count the intersections between
     # O_iC and the spherical polygon edges in the cell
@@ -834,10 +880,12 @@ def determine_first_traversal_point(first_cell_lat_1,
         # determine_arc_intersection() function
         start = np.array([radius, edge[0][0], edge[0][1]])
         end = np.array([radius, edge[1][0], edge[1][1]])
-        candidate_edge_start = convert_spherical_array_to_cartesian_array(start.copy(),
-                                                                          angle_measure='degrees')
-        candidate_edge_end = convert_spherical_array_to_cartesian_array(end.copy(),
-                                                                          angle_measure='degrees')
+        candidate_edge_start = convert_spherical_array_to_cartesian_array(
+                                                     start.copy(),
+                                                     angle_measure='degrees')
+        candidate_edge_end = convert_spherical_array_to_cartesian_array(
+                                                     end.copy(),
+                                                     angle_measure='degrees')
         if determine_arc_intersection(point_A=O_iC_Cartesian[0].ravel(),
                                       point_B=O_iC_Cartesian[1].ravel(),
                                       point_C=candidate_edge_start,
