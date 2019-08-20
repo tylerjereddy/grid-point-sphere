@@ -132,6 +132,14 @@ def test_grid_level_1_edge_count_boundary():
 
     assert np.count_nonzero(result) < max_allowed
 
+    # because the input spherical polygon is a spherical triangle,
+    # there are three vertices, and therefore a maximum of three level 1
+    # grid cells permitted to contain > 1 spherical polygon edge
+    assert (result == 2).sum() <= 3
+
+    # no level 1 grid cell should contain > 2 spherical polygon edges
+    assert (result > 2).sum() == 0
+
 @pytest.mark.parametrize("i, j, k, l_lambda, l_phi, N", [
                          (2, 3, 1.0, 2.5, 2.5, 10),
                          (4, 9, 1.0, 4.5, 9.5, 200),
