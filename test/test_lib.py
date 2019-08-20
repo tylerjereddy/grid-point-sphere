@@ -120,7 +120,7 @@ def test_grid_level_1_edge_count_boundary():
     # that covers less than 1/8 the total
     # surface area of a sphere, it should
     # be impossible to have spherical polygon
-    # edges in >= 1/2 of all grid cells
+    # edges in >= 1/8 of all grid cells
     # covering the sphere surface at level 1
 
     test_polygon = np.array([[0,0,1],
@@ -128,7 +128,7 @@ def test_grid_level_1_edge_count_boundary():
                              [np.sqrt(2) / 2., 0, np.sqrt(2) / 2.]])
 
     result = lib.cast_subgrids(test_polygon)
-    max_allowed = int(result.size / 2.)
+    max_allowed = result.size / 8.
 
     assert np.count_nonzero(result) < max_allowed
 
