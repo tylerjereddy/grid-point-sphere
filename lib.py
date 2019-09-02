@@ -700,7 +700,8 @@ def cast_subgrids(spherical_polyon,
 
     # for the subdivision algorithm, each subsequent level should have a higher
     # count of grid cells containing spherical polygon edges
-    assert grid_cell_edge_counts_level_3.sum() > grid_cell_edge_counts_level_2.sum()
+    assert (grid_cell_edge_counts_level_3.sum() >
+            grid_cell_edge_counts_level_2.sum())
 
     # produce level 4 grid data structure
     # here we have to loop through each of the level 3 grids
@@ -770,7 +771,8 @@ def cast_subgrids(spherical_polyon,
 
     # for the subdivision algorithm, each subsequent level should have a higher
     # count of grid cells containing spherical polygon edges
-    assert grid_cell_edge_counts_level_4.sum() > grid_cell_edge_counts_level_3.sum()
+    assert (grid_cell_edge_counts_level_4.sum() >
+            grid_cell_edge_counts_level_3.sum())
 
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
