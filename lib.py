@@ -2,7 +2,9 @@
 algorithm implementation described by Li et al. (2017).
 '''
 
+import math
 import numpy as np
+from numpy.testing import assert_allclose
 
 
 def generate_level_subgrids(dict_level_n,
@@ -249,7 +251,7 @@ def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
                                                l_phi,
                                                N)
 
-    return int(m_lambda)
+    return math.ceil(m_lambda)
 
 
 def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
@@ -289,7 +291,7 @@ def calc_m_phi(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
                                          l_phi,
                                          N)
 
-    return int(m_phi)
+    return math.ceil(m_phi)
 
 
 def _grid_build_coef(k=1.0, l_lambda=1, l_phi=1, N=0):
@@ -626,6 +628,9 @@ def cast_subgrids(spherical_polyon,
     # the number of spherical polygon edges
     # contained within each L2 grid cell
     grid_cell_edge_counts_level_2 = np.array(grid_cell_edge_counts_level_2)
+
+    # level 2 grid should be subdivided with more grid cells containing edges:
+    assert grid_cell_edge_counts_level_2.sum() > edge_count_array.sum()
 
     # produce level 3 grid data structure
     # here we have to loop through each of the level 2 grids
