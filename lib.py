@@ -698,6 +698,10 @@ def cast_subgrids(spherical_polyon,
     # contained within each L3 grid cell
     grid_cell_edge_counts_level_3 = np.array(grid_cell_edge_counts_level_3)
 
+    # for the subdivision algorithm, each subsequent level should have a higher
+    # count of grid cells containing spherical polygon edges
+    assert grid_cell_edge_counts_level_3.sum() > grid_cell_edge_counts_level_2.sum()
+
     # produce level 4 grid data structure
     # here we have to loop through each of the level 3 grids
     dict_level_4 = {}
@@ -725,6 +729,48 @@ def cast_subgrids(spherical_polyon,
                                         level_n_lat=level_3_lat,
                                         level_n_long=level_3_long)
                 grid_index += N
+
+    # start processing level 4 grid data (should eventually
+    # be able to reduce code duplication & combine levels
+    # in a loop)
+
+    grid_cell_edge_counts_level_4 = []
+    L4_grid_cell_counter = 0
+
+    for level_4_grid_key in sorted(dict_level_4.keys()):
+        # level 4 has many grids
+        # so we iterate through the
+        # cells of each of those grids
+        level_4_grid = dict_level_4[level_4_grid_key]
+        for key, value in level_4_grid.items():
+            if len(value) > 0:
+
+                # now generate the level_x_lat and
+                # level_x_long vars like we did with level
+                # 1 previously
+                level_4_lat = value[0]
+                level_4_long = value[1]
+
+                # try looping over these values in
+                # all the subgrids (but be careful not
+                # to reset values between L4 subgrids)
+                (grid_cell_edge_counts_level_4,
+                    L4_grid_cell_counter) = edge_cross_accounting(
+                                                level_4_lat,
+                                                level_4_long,
+                                                N_edges,
+                                                grid_cell_edge_counts_level_4,
+                                                L4_grid_cell_counter,
+                                                spherical_polyon)
+
+    # now we have the data structure containing
+    # the number of spherical polygon edges
+    # contained within each L4 grid cell
+    grid_cell_edge_counts_level_4 = np.array(grid_cell_edge_counts_level_4)
+
+    # for the subdivision algorithm, each subsequent level should have a higher
+    # count of grid cells containing spherical polygon edges
+    assert grid_cell_edge_counts_level_4.sum() > grid_cell_edge_counts_level_3.sum()
 
     # NOTE: this isn't likely what I'll want to return
     # in final version of function;
