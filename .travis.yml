@@ -4,6 +4,7 @@ python:
   # see: https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.html#the-travis-yml-file
   - "3.6"
   - "3.7"
+  - "3.8"
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -13,7 +14,7 @@ before_install:
   - conda update conda
 install:
   - conda config --add channels conda-forge
-  - conda create -q -n pyenv libgfortran python=$TRAVIS_PYTHON_VERSION numpy=1.17 scipy=1.3.0 pytest pytest-cov pyyaml pycodestyle
+  - conda create -q -n pyenv libgfortran python=$TRAVIS_PYTHON_VERSION numpy scipy pytest pytest-cov pyyaml pycodestyle
   - source activate pyenv
   - conda install codecov
   - chmod +x ./
