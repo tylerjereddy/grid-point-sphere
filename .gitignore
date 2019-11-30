@@ -16,3 +16,4 @@ tags
 # pytest related tags
 .cache
 __pycache__/
+.coverage
