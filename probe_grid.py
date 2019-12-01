@@ -106,10 +106,9 @@ for key, edge_entry in dict_edge_data.items():
     iter_count += 1
     print(iter_count, 'of', total_iter, 'iterations')
 
-polygon = Poly3DCollection([interpolated_polygon], alpha=1.0)
+polygon = Poly3DCollection([interpolated_polygon], alpha=0.3)
 polygon.set_color('purple')
 ax.add_collection3d(polygon)
-ax.set_aspect('equal')
 ax.azim = -30
 ax.elev = -30
 
