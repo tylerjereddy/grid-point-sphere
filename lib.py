@@ -344,7 +344,7 @@ def arc_plane_side(center,
     Determine which side of a great circle plane
     a point on the surface of the sphere is on. The
     anticipated use case is as part of the process
-    for determing if two minor arcs intersect (i.e.,
+    for determining if two minor arcs intersect (i.e.,
     if the arc connecting two center points in grid
     intersects with an arc representing an edge
     of the spherical polygon). In that case,
@@ -461,7 +461,7 @@ def cast_grid_level_1():
     has fixed size / coarse resolution.
 
     Returns: mesh-grid ndarrays at
-             the fixed dimensionalities
+             the fixed dimensions
              specified by Equation 1
              in manuscript
     '''
@@ -607,7 +607,7 @@ def cast_subgrids(spherical_polyon,
         # cells of each of those grids
         level_2_grid = dict_level_2[level_2_grid_key]
 
-        # now genrate the level_x_lat and
+        # now generate the level_x_lat and
         # level_x_long vars like we did with level
         # 1 previously
         level_2_lat = level_2_grid[0]
@@ -889,7 +889,7 @@ def determine_first_traversal_point(first_cell_lat_1,
     # edge inside the first cell on the traversal path
     # let's assume that list_edges_in_first_cell is a
     # data structure where each index contains a shape
-    # (2, 2) set of spherical coordinates respresenting
+    # (2, 2) set of spherical coordinates representing
     # one of the spherical polygon edges (arcs) contained within
     # the first cell
 
