@@ -13,6 +13,8 @@ import lib
 import pyximport; pyximport.install()
 from slerp import _slerp as slerp
 import copy
+import scipy
+import scipy.spatial
 
 # the input will be a spherical triangle that
 # covers exactly 1/8 the surface area of the unit
@@ -88,6 +90,13 @@ plot = True
 for key, edge_entry in dict_edge_data.items():
     current_edge = edge_entry['edge']
     current_edge_count = edge_entry['edge_count']
+    dist = scipy.spatial.distance.cdist(spherical_polyon,
+                                        current_edge).min()
+    if current_edge_count > 0:
+        msg = ("dist violation for current_edge_count: " + str(current_edge_count) +
+                "; edge: " + str(current_edge) +
+                "; distance: " + str(dist))
+        assert dist <= np.sqrt(2), msg
 
     for subkey, subentry in internal_dict.items():
         reference_edge = subentry['edge']
