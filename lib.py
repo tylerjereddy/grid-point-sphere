@@ -175,8 +175,33 @@ def edge_cross_accounting(level_n_lat,
                         # we record the presence of that edge
                         # inside the cell & then move on
                         # to the next edge of the spherical polygon
-                        grid_cell_edge_counts_level_n[
-                                    level_n_grid_cell_counter - 1] += 1
+
+                        # actually, this is too generous---it can record
+                        # plane intersections when the arcs are really nowhere
+                        # near each other on the sphere surface due to
+                        # extrapolation;
+                        # try to filter at least crudely using coordinate
+                        # limits
+
+                        true_intersection = 1
+                        for coord_axis in range(3):
+                            if (np.minimum(point_A, point_B)[coord_axis] >
+                               np.maximum(point_C, point_D)[coord_axis]):
+                                # there's no way spherical polygon edge AB
+                                # intersects CD grid edge because AB is above
+                                # CD on the sphere X,Y, or Z coord
+                                true_intersection = 0
+                                break
+                            elif (np.maximum(point_A, point_B)[coord_axis] <
+                                  np.minimum(point_C, point_D)[coord_axis]):
+                                # same argument with AB completely below
+                                # CD
+                                true_intersection = 0
+                                break
+
+                        if true_intersection:
+                            grid_cell_edge_counts_level_n[
+                                        level_n_grid_cell_counter - 1] += 1
                         break
 
     return (grid_cell_edge_counts_level_n, level_n_grid_cell_counter)
