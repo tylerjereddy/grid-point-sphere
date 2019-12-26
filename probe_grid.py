@@ -120,5 +120,8 @@ polygon.set_color('purple')
 ax.add_collection3d(polygon)
 ax.azim = -30
 ax.elev = -30
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
 
 fig_level_1.savefig("level_1_grid.png", dpi=300)

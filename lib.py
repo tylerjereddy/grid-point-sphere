@@ -160,12 +160,8 @@ def edge_cross_accounting(level_n_lat,
                 # grid cell edges
                 for grid_cell_index in [0, 1, 2, 3]:
                     current_index = grid_cell_index
-                    if current_index == 2:
+                    if current_index == 3:
                         next_index = 0
-                    elif current_index == 3:
-                        next_index = 2
-                    elif current_index == 1:
-                        next_index = 3
                     else:
                         next_index = current_index + 1
 
