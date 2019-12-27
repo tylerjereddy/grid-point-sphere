@@ -127,8 +127,8 @@ def edge_cross_accounting(level_n_lat,
             # convert to Cartesian coords
             cart_coords = [top_left_corner,
                            top_right_corner,
-                           bottom_left_corner,
-                           bottom_right_corner]
+                           bottom_right_corner,
+                           bottom_left_corner]
 
             for k in range(4):
                 # hard coding unit radius at the moment
@@ -154,7 +154,7 @@ def edge_cross_accounting(level_n_lat,
                 # check for crossing between current
                 # spherical polygon arc and the current
                 # grid cell edges
-                for grid_cell_index in range(4):
+                for grid_cell_index in [0, 1, 2, 3]:
                     current_index = grid_cell_index
                     if current_index == 3:
                         next_index = 0
@@ -169,7 +169,83 @@ def edge_cross_accounting(level_n_lat,
                                                            point_C,
                                                            point_D,
                                                            np.zeros((3,)))
-                    if intersect:
+                    # register near-exact matches for lat/long
+                    # between grid cell edges and spherical polygon
+                    # edges---will aim to mark these grid cells for division
+                    edge_overlap = False
+                    point_AB_conv = convert_cartesian_to_lat_long(np.array([
+                                                                point_A,
+                                                                point_B]))
+                    point_CD_conv = convert_cartesian_to_lat_long(np.array([
+                                                                point_C,
+                                                                point_D]))
+                    point_A_conv = point_AB_conv[0]
+                    point_B_conv = point_AB_conv[1]
+                    point_C_conv = point_CD_conv[0]
+                    point_D_conv = point_CD_conv[1]
+
+                    # careful at longitude transition point
+                    point_A_conv[point_A_conv == -180] = 180
+                    point_B_conv[point_B_conv == -180] = 180
+                    point_C_conv[point_C_conv == -180] = 180
+                    point_D_conv[point_D_conv == -180] = 180
+                    point_A_conv[point_A_conv < -180] += 360
+                    point_B_conv[point_B_conv < -180] += 360
+                    point_C_conv[point_C_conv < -180] += 360
+                    point_D_conv[point_D_conv < -180] += 360
+                    point_A_conv[point_A_conv > 180] -= 360
+                    point_B_conv[point_B_conv > 180] -= 360
+                    point_C_conv[point_C_conv > 180] -= 360
+                    point_D_conv[point_D_conv > 180] -= 360
+                    point_A_conv[abs(point_A_conv) == 360] = 180
+                    point_B_conv[abs(point_B_conv) == 360] = 180
+                    point_C_conv[abs(point_C_conv) == 360] = 180
+                    point_D_conv[abs(point_D_conv) == 360] = 180
+
+                    # if both latitude and longitude change for
+                    # a grid cell edge, it is not actually an edge
+                    # since it intersects the cell
+                    if ((not np.allclose(point_C_conv[0], point_D_conv[0])) and
+                        (not np.allclose(point_C_conv[1],
+                                         point_D_conv[1]))):
+                        edge = str([point_C_conv, point_D_conv])
+                        raise ValueError("Self-intersecting grid cell "
+                                         "edge detected: " + edge)
+
+                    if point_C_conv[-1] == point_D_conv[-1]:
+                        if np.allclose(point_C_conv[-1],
+                                       [point_A_conv[-1],
+                                        point_B_conv[-1]]):
+                            # match on longitude line, but
+                            # check for range match---we don't
+                            # want to flag grid cells that are out
+                            # of latitude range even if parallel to
+                            # spherical polygon edge
+                            max_val = np.maximum(point_C_conv[0],
+                                                 point_D_conv[0])
+                            min_val = np.minimum(point_C_conv[0],
+                                                 point_D_conv[0])
+                            if (max_val >
+                                np.minimum(point_A_conv[0], point_B_conv[0])
+                                and min_val < np.maximum(point_A_conv[0],
+                                                         point_B_conv[0])):
+                                edge_overlap = True
+                    elif point_C_conv[0] == point_D_conv[0]:
+                        if np.allclose(point_C_conv[0],
+                                       [point_A_conv[0],
+                                        point_B_conv[0]]):
+                            # similar range filter check to above
+                            max_val = np.maximum(point_C_conv[1],
+                                                 point_D_conv[1])
+                            min_val = np.minimum(point_C_conv[1],
+                                                 point_D_conv[1])
+                            if (max_val >
+                                np.minimum(point_A_conv[1], point_B_conv[1])
+                                and min_val < np.maximum(point_A_conv[1],
+                                                         point_B_conv[1])):
+                                edge_overlap = True
+
+                    if intersect or edge_overlap:
                         # once a spherical polygon edge is found
                         # to intersect any edge of the grid cell
                         # we record the presence of that edge
@@ -199,7 +275,7 @@ def edge_cross_accounting(level_n_lat,
                                 true_intersection = 0
                                 break
 
-                        if true_intersection:
+                        if true_intersection or edge_overlap:
                             grid_cell_edge_counts_level_n[
                                         level_n_grid_cell_counter - 1] += 1
                         break
@@ -237,6 +313,50 @@ def convert_spherical_array_to_cartesian_array(spherical_coord_array,
     cartesian_coord_array[..., 2] = (spherical_coord_array[..., 0] *
                                      np.sin(spherical_coord_array[..., 1]))
     return cartesian_coord_array
+
+
+def convert_cartesian_to_lat_long(cartesian_coord_array):
+    # https://gis.stackexchange.com/a/120740
+    output_array = np.empty(cartesian_coord_array.shape)[..., :-1]
+    # assume unit sphere:
+    r = 1.0
+    # latitude:
+    output_array[..., 0] = (np.arcsin(cartesian_coord_array[..., 2]/r) *
+                            180. / np.pi)
+    # longitude:
+    output_array[..., 1] = (np.arctan2(cartesian_coord_array[..., 1],
+                                       cartesian_coord_array[..., 0]) *
+                            180. / np.pi)
+
+    output_array[..., 1][(cartesian_coord_array[..., 0] <= 0) &
+                         (cartesian_coord_array[..., 1] > 0)] += 180
+    output_array[..., 1][(cartesian_coord_array[..., 0] <= 0) &
+                         (cartesian_coord_array[..., 1] <= 0)] -= 180
+
+    # the longitude value of a N/S pole coordinate is ambiguous,
+    # so in that case just use the same longitude value as the other
+    # coordinate in pair
+    if np.allclose(cartesian_coord_array[0], np.array([0, 0, 1])):
+        # +90 latitude at North Pole
+        output_array[0, 0] = 90.0
+        # same longitude as other coord:
+        output_array[0, 1] = output_array[1, 1]
+    elif np.allclose(cartesian_coord_array[0], np.array([0, 0, -1])):
+        # -90 latitude at South Pole
+        output_array[0, 0] = -90.0
+        # same longitude as other coord:
+        output_array[0, 1] = output_array[1, 1]
+    elif np.allclose(cartesian_coord_array[1], np.array([0, 0, -1])):
+        # -90 latitude at South Pole
+        output_array[1, 0] = -90.0
+        # same longitude as other coord:
+        output_array[1, 1] = output_array[0, 1]
+    elif np.allclose(cartesian_coord_array[1], np.array([0, 0, 1])):
+        # 90 latitude at North Pole
+        output_array[1, 0] = 90.0
+        # same longitude as other coord:
+        output_array[1, 1] = output_array[0, 1]
+    return output_array
 
 
 def calc_m_lambda(i, j, k=1.0, l_lambda=1, l_phi=1, N=0, MAXD=4):
