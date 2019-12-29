@@ -51,7 +51,9 @@ cartesian_coords_cells_L1,
 edge_count_array_L2,
 cartesian_coords_cells_L2,
 edge_count_array_L3,
-cartesian_coords_cells_L3) = results
+cartesian_coords_cells_L3,
+edge_count_array_L4,
+cartesian_coords_cells_L4) = results
 
 # plot the level 1 grid on the unit sphere
 # along with the spherical polygon, albeit with
@@ -101,6 +103,24 @@ for L3_sub in cartesian_coords_cells_L3:
                     square[...,1],
                     square[...,2],
                     color='grey')
+# looks like the L4 Cartesian coords
+# are organized in sub-arrays:
+iter_count = 0
+for L4_sub in cartesian_coords_cells_L4:
+    for square in L4_sub:
+        if iter_count == 0:
+            # add label only once
+            ax.plot(square[...,0],
+                    square[...,1],
+                    square[...,2],
+                    label='level 4',
+                    color='blue')
+            iter_count += 1
+        else:
+            ax.plot(square[...,0],
+                    square[...,1],
+                    square[...,2],
+                    color='blue')
 ax.legend()
 
 # color code cells by amount of spherical

@@ -892,6 +892,7 @@ def cast_subgrids(spherical_polyon,
 
     grid_cell_edge_counts_level_4 = []
     L4_grid_cell_counter = 0
+    cart_coords_L4 = []
 
     for level_4_grid_key in sorted(dict_level_4.keys()):
         # level 4 has many grids
@@ -912,13 +913,14 @@ def cast_subgrids(spherical_polyon,
                 # to reset values between L4 subgrids)
                 (grid_cell_edge_counts_level_4,
                     L4_grid_cell_counter,
-                    cart_coords_L4) = edge_cross_accounting(
+                    cart_coords_L4_tmp) = edge_cross_accounting(
                                                 level_4_lat,
                                                 level_4_long,
                                                 N_edges,
                                                 grid_cell_edge_counts_level_4,
                                                 L4_grid_cell_counter,
                                                 spherical_polyon)
+                cart_coords_L4.append(cart_coords_L4_tmp)
 
     # now we have the data structure containing
     # the number of spherical polygon edges
@@ -939,7 +941,9 @@ def cast_subgrids(spherical_polyon,
             grid_cell_edge_counts_level_2,
             np.array(cart_coords_L2),
             grid_cell_edge_counts_level_3,
-            np.array(cart_coords_L3))
+            np.array(cart_coords_L3),
+            grid_cell_edge_counts_level_4,
+            np.array(cart_coords_L4))
 
 
 def grid_center_point(grid_cell_long_1,
