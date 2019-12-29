@@ -121,7 +121,6 @@ for L4_sub in cartesian_coords_cells_L4:
                     square[...,1],
                     square[...,2],
                     color='blue')
-ax.legend()
 
 # color code cells by amount of spherical
 # polygon edges contained
@@ -179,12 +178,16 @@ for key, edge_entry in dict_edge_data.items():
     print(iter_count, 'of', total_iter, 'iterations')
 
 polygon = Poly3DCollection([interpolated_polygon], alpha=0.3)
+polygon._facecolors2d=polygon._facecolors3d
+polygon._edgecolors2d=polygon._edgecolors3d
 polygon.set_color('purple')
+polygon.set_label('input spherical polygon')
 ax.add_collection3d(polygon)
 ax.azim = -30
 ax.elev = -30
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
+ax.legend()
 
 fig_level_1.savefig("level_1_grid.png", dpi=300)
