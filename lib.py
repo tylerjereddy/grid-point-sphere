@@ -769,7 +769,8 @@ def cast_subgrids(spherical_polyon,
         # to reset values between L2 subgrids)
         (grid_cell_edge_counts_level_2,
          L2_grid_cell_counter,
-         cart_coords_L2_tmp) = edge_cross_accounting(level_2_lat,
+         cart_coords_L2_tmp) = edge_cross_accounting(
+                                                 level_2_lat,
                                                  level_2_long,
                                                  N_edges,
                                                  grid_cell_edge_counts_level_2,
