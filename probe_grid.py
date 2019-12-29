@@ -204,7 +204,9 @@ ax.elev = -30
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
-ax.legend()
+ax.legend(loc="lower left",
+          bbox_to_anchor=(0,-0.1),
+          ncol=2)
 ax.set_title('Prototype Multilevel Spherical Grid Data '
              'Structure Based on Published Description by \n'
              'Li et al. (2017); pre-requisite for fastest '
