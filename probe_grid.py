@@ -205,5 +205,12 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
 ax.legend()
+ax.set_title('Prototype Multilevel Spherical Grid Data '
+             'Structure Based on Published Description by \n'
+             'Li et al. (2017); pre-requisite for fastest '
+             'known spherical point-in-polygon algorithm',
+             y=1.12,
+             fontsize=8)
 
 fig_level_1.savefig("level_1_grid.png", dpi=300)
+fig_level_1.set_size_inches(10,10)
