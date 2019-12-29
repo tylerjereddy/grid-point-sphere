@@ -148,6 +148,11 @@ internal_dict = copy.deepcopy(dict_edge_data)
 iter_count = 0
 total_iter = len(dict_edge_data)
 plot = True
+# should probably switch to custom
+# legend, but do this for now:
+has_black_legend_entry = False
+has_yellow_legend_entry = False
+has_red_legend_entry = False
 
 for key, edge_entry in dict_edge_data.items():
     current_edge = edge_entry['edge']
@@ -169,9 +174,20 @@ for key, edge_entry in dict_edge_data.items():
                 plot = False
                 break
     if plot:
+        label=None
+        if current_edge_count == 0 and not has_black_legend_entry:
+            label='Level 1 no edge'
+            has_black_legend_entry = True
+        elif current_edge_count == 1 and not has_yellow_legend_entry:
+            label='Level 1 with 1 edge'
+            has_yellow_legend_entry = True
+        elif current_edge_count == 2 and not has_red_legend_entry:
+            label='Level 1 with 2 edges'
+            has_red_legend_entry = True
         ax.plot(current_edge[..., 0],
                 current_edge[..., 1],
                 current_edge[..., 2],
+                label=label,
                 color=colors[current_edge_count])
     plot = True
     iter_count += 1
