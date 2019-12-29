@@ -49,7 +49,9 @@ results = lib.cast_subgrids(spherical_polyon=spherical_polyon,
 (edge_count_array_L1,
 cartesian_coords_cells_L1,
 edge_count_array_L2,
-cartesian_coords_cells_L2) = results
+cartesian_coords_cells_L2,
+edge_count_array_L3,
+cartesian_coords_cells_L3) = results
 
 # plot the level 1 grid on the unit sphere
 # along with the spherical polygon, albeit with
@@ -80,6 +82,25 @@ for L2_sub in cartesian_coords_cells_L2:
                     square[...,1],
                     square[...,2],
                     color='green')
+
+# looks like the L3 Cartesian coords
+# are organized in sub-arrays:
+iter_count = 0
+for L3_sub in cartesian_coords_cells_L3:
+    for square in L3_sub:
+        if iter_count == 0:
+            # add label only once
+            ax.plot(square[...,0],
+                    square[...,1],
+                    square[...,2],
+                    label='level 3',
+                    color='grey')
+            iter_count += 1
+        else:
+            ax.plot(square[...,0],
+                    square[...,1],
+                    square[...,2],
+                    color='grey')
 ax.legend()
 
 # color code cells by amount of spherical
