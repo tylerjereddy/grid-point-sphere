@@ -14,6 +14,7 @@ import copy
 import scipy
 import scipy.spatial
 from scipy.spatial import geometric_slerp
+from tqdm import tqdm
 
 # the input will be a spherical triangle that
 # covers exactly 1/8 the surface area of the unit
@@ -57,7 +58,19 @@ cartesian_coords_cells_L4) = results
 # along with the spherical polygon, albeit with
 # crude matplotlib 3D handling
 fig_level_1 = plt.figure()
+fig_level_1_centers = plt.figure()
+# maintain a separate figure for the level
+# grid cell "centers"
 ax = fig_level_1.add_subplot(111, projection='3d')
+ax_centers = fig_level_1_centers.add_subplot(111, projection='3d')
+grid_cell_center_coords_L1 = lib.produce_level_1_grid_centers(
+                                 spherical_polyon)[0]
+ax_centers.scatter(grid_cell_center_coords_L1[..., 0],
+                   grid_cell_center_coords_L1[..., 1],
+                   grid_cell_center_coords_L1[..., 2],
+                   marker='.',
+                   color='black')
+
 ax.scatter(cartesian_coords_cells_L1[...,0],
            cartesian_coords_cells_L1[...,1],
            cartesian_coords_cells_L1[...,2],
@@ -152,7 +165,8 @@ has_black_legend_entry = False
 has_yellow_legend_entry = False
 has_red_legend_entry = False
 
-for key, edge_entry in dict_edge_data.items():
+for key, edge_entry in tqdm(dict_edge_data.items(),
+                            desc='iter_count'):
     current_edge = edge_entry['edge']
     current_edge_count = edge_entry['edge_count']
     dist = scipy.spatial.distance.cdist(spherical_polyon,
@@ -187,9 +201,15 @@ for key, edge_entry in dict_edge_data.items():
                 current_edge[..., 2],
                 label=label,
                 color=colors[current_edge_count])
+        # for the L1 centers plot we just want
+        # the grid outline for now
+        ax_centers.plot(current_edge[..., 0],
+                        current_edge[..., 1],
+                        current_edge[..., 2],
+                        color='k',
+                        alpha=0.3)
     plot = True
     iter_count += 1
-    print(iter_count, 'of', total_iter, 'iterations')
 
 polygon = Poly3DCollection([interpolated_polygon], alpha=0.3)
 polygon._facecolors2d=polygon._facecolors3d
@@ -202,6 +222,10 @@ ax.elev = -30
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
+
+ax_centers.set_xlabel('x')
+ax_centers.set_ylabel('y')
+ax_centers.set_zlabel('z')
 ax.legend(loc="lower left",
           bbox_to_anchor=(0,-0.1),
           ncol=2)
@@ -214,3 +238,7 @@ ax.set_title('Prototype Multilevel Spherical Grid Data '
 
 fig_level_1.savefig("level_1_grid.png", dpi=300)
 fig_level_1.set_size_inches(10,10)
+
+ax_centers.azim = 70
+ax_centers.elev = 50
+fig_level_1_centers.savefig("level_1_centers.png", dpi=300)

@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import (assert_almost_equal,
+                           assert_allclose)
 from math import sqrt
 import lib
 
@@ -361,3 +362,42 @@ class TestGridCenterPoint(object):
                                        grid_cell_lat_2=lat_2)
 
         assert_almost_equal(actual, expected)
+
+def test_level_1_grid_centers():
+    # check some simple properties of the level 1
+    # grid center data structure produced by
+    # produce_level_1_grid_centers()
+
+    # since the L1 grid is fixed, the choice
+    # of input spherical_polygon isn't too
+    # important here
+    spherical_polygon = np.array([[0, 1, 0],
+                                  [0, 0, 1],
+                                  [-1, 0, 0]], dtype=np.float64)
+
+    # retrieve the edge counts for level 1
+    # from another function, so that we
+    # have a reference data structure for
+    # shape comparison
+    expected_edge_count_array_L1 = lib.cast_subgrids(spherical_polygon)[0]
+
+    (actual_grid_cell_center_coords_L1,
+     actual_edge_count_array_L1) = lib.produce_level_1_grid_centers(
+                                            spherical_polygon)
+
+    # the edge count array should have been
+    # passed through produce_level_1_grid_centers()
+    # unchanged
+    assert_allclose(actual_edge_count_array_L1,
+                    expected_edge_count_array_L1)
+
+    # the number of grid cell center coordinates
+    # should match the edge count data structure size
+    assert_allclose(actual_grid_cell_center_coords_L1.shape[0],
+                    expected_edge_count_array_L1.size)
+
+    # all L1 grid cell center coords should be on the unit
+    # sphere/norm
+    norms = np.linalg.norm(actual_grid_cell_center_coords_L1, axis=1)
+    expected_norms = np.ones((expected_edge_count_array_L1.size,))
+    assert_allclose(norms, expected_norms)
