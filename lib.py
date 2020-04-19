@@ -940,11 +940,11 @@ def cast_subgrids(spherical_polyon,
     return (edge_count_array,
             cart_coords_L1,
             grid_cell_edge_counts_level_2,
-            np.array(cart_coords_L2),
+            np.array(cart_coords_L2, dtype=object),
             grid_cell_edge_counts_level_3,
-            np.array(cart_coords_L3),
+            np.array(cart_coords_L3, dtype=object),
             grid_cell_edge_counts_level_4,
-            np.array(cart_coords_L4))
+            np.array(cart_coords_L4, dtype=object))
 
 
 def grid_center_point(grid_cell_long_1,

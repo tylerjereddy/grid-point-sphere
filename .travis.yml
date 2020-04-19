@@ -1,3 +1,5 @@
+os: linux
+dist: bionic
 language: python
 python:
   # not actually using the Travis versions of Python shown here, but useful to organize matrix
