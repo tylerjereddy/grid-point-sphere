@@ -10,11 +10,10 @@ from mpl_toolkits.mplot3d import proj3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 import lib
-import pyximport; pyximport.install()
-from slerp import _slerp as slerp
 import copy
 import scipy
 import scipy.spatial
+from scipy.spatial import geometric_slerp
 
 # the input will be a spherical triangle that
 # covers exactly 1/8 the surface area of the unit
@@ -37,9 +36,8 @@ for i in range(N):
     else:
         next_index = i + 1
 
-    interpolated_polygon[counter:(counter + n_int), ...] = slerp(spherical_polyon[i],
+    interpolated_polygon[counter:(counter + n_int), ...] = geometric_slerp(spherical_polyon[i],
                                                                spherical_polyon[next_index],
-                                                               n_int,
 							       t_values)
     counter += n_int
 
