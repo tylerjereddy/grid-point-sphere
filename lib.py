@@ -188,24 +188,6 @@ def edge_cross_accounting(level_n_lat,
                     point_C_conv = point_CD_conv[0]
                     point_D_conv = point_CD_conv[1]
 
-                    # careful at longitude transition point
-                    point_A_conv[point_A_conv == -180] = 180
-                    point_B_conv[point_B_conv == -180] = 180
-                    point_C_conv[point_C_conv == -180] = 180
-                    point_D_conv[point_D_conv == -180] = 180
-                    point_A_conv[point_A_conv < -180] += 360
-                    point_B_conv[point_B_conv < -180] += 360
-                    point_C_conv[point_C_conv < -180] += 360
-                    point_D_conv[point_D_conv < -180] += 360
-                    point_A_conv[point_A_conv > 180] -= 360
-                    point_B_conv[point_B_conv > 180] -= 360
-                    point_C_conv[point_C_conv > 180] -= 360
-                    point_D_conv[point_D_conv > 180] -= 360
-                    point_A_conv[abs(point_A_conv) == 360] = 180
-                    point_B_conv[abs(point_B_conv) == 360] = 180
-                    point_C_conv[abs(point_C_conv) == 360] = 180
-                    point_D_conv[abs(point_D_conv) == 360] = 180
-
                     # if both latitude and longitude change for
                     # a grid cell edge, it is not actually an edge
                     # since it intersects the cell
@@ -333,11 +315,6 @@ def convert_cartesian_to_lat_long(cartesian_coord_array):
                                        cartesian_coord_array[..., 0]) *
                             180. / np.pi)
 
-    output_array[..., 1][(cartesian_coord_array[..., 0] <= 0) &
-                         (cartesian_coord_array[..., 1] > 0)] += 180
-    output_array[..., 1][(cartesian_coord_array[..., 0] <= 0) &
-                         (cartesian_coord_array[..., 1] <= 0)] -= 180
-
     # the longitude value of a N/S pole coordinate is ambiguous,
     # so in that case just use the same longitude value as the other
     # coordinate in pair
@@ -361,6 +338,12 @@ def convert_cartesian_to_lat_long(cartesian_coord_array):
         output_array[1, 0] = 90.0
         # same longitude as other coord:
         output_array[1, 1] = output_array[0, 1]
+
+    # careful at longitude transition point
+    output_array[output_array == -180] = 180
+    output_array[output_array < -180] += 360
+    output_array[output_array > 180] -= 360
+    output_array[abs(output_array) == 360] = 180
     return output_array
 
 
@@ -1137,3 +1120,76 @@ def determine_first_traversal_point(first_cell_lat_1,
         else:
             # O_i is outside the polygon
             return 'outside'
+
+
+def produce_level_1_grid_centers(spherical_polygon):
+    '''
+    This function should accept as input
+    the spherical_polygon coordinates. The function
+    should generate and return a data structure that
+    includes the coordinates of the centers of all
+    grid cells at level 1. It should also return
+    the level 1 edge_count_array unchanged for convenience,
+    so that the centers of level 1 grid cells and the number
+    of spherical polygon edges that intersect their cells
+    are available side-by-side.
+
+
+    spherical_polygon: an ndarray of the
+                      sorted vertices of
+                      the spherical polygon
+                      in Cartesian coords
+                      shape -- (N, 3)
+    '''
+    # retrieve level 1 edge counts & level 1 Cartesian
+    # coordinates (of grid cells); the edge counts won't
+    # be used directly here, but will be returned back
+    # for convenience later
+    (edge_count_array_L1,
+     cart_coords_L1) = cast_subgrids(spherical_polygon)[:2]
+
+    grid_cell_center_coords_L1 = []
+
+    for grid_coord in cart_coords_L1:
+        # I think convert_cartesian_to_lat_long is currently
+        # best suited to dealing with edges, so feed two coords
+        # at a time
+        grid_coord_convA = convert_cartesian_to_lat_long(grid_coord[:2])
+        grid_coord_convB = convert_cartesian_to_lat_long(grid_coord[2:])
+        # at least for the case of working with a grid cell that
+        # involves a poll, I think it is safer to take the unique lat/lon
+        # coordinates to get the span of the grid cell
+        result_arr = np.empty((grid_coord.shape[0], 2))
+        result_arr[:2] = grid_coord_convA
+        result_arr[2:] = grid_coord_convB
+        # careful with floating point unique comparisons,
+        # trying to fix some issues with rounding that otherwise
+        # lead to apparent duplication for "slightly different" vals
+        unique_lat = np.unique(result_arr[..., 0].round(decimals=7))
+        msg = "unique_lat has wrong size: " + str(unique_lat)
+        assert unique_lat.size == 2, msg
+        unique_long = np.unique(result_arr[..., 1].round(decimals=7))
+        msg = "unique_long has wrong size: " + str(unique_long)
+        assert unique_long.size == 2, msg
+        grid_center_lat_long = grid_center_point(
+                                grid_cell_long_1=unique_long[0],
+                                grid_cell_long_2=unique_long[1],
+                                grid_cell_lat_1=unique_lat[0],
+                                grid_cell_lat_2=unique_lat[1])
+        grid_center = convert_spherical_array_to_cartesian_array(np.array(
+                                        [1] + grid_center_lat_long.tolist()),
+                                        angle_measure='degrees')
+        grid_cell_center_coords_L1.append(grid_center)
+
+    grid_cell_center_coords_L1 = np.array(grid_cell_center_coords_L1)
+
+    msg = "grid cell center coordinates should be in 3 dims"
+    assert grid_cell_center_coords_L1.shape[1] == 3, msg
+
+    msg = ("grid cell center coordinates should "
+           "match size of the edge count array for "
+           "level 1")
+    assert grid_cell_center_coords_L1.shape[0] == edge_count_array_L1.size, msg
+
+    return (grid_cell_center_coords_L1,
+            edge_count_array_L1)

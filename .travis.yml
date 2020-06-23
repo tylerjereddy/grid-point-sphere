@@ -16,8 +16,9 @@ before_install:
   - conda update conda
 install:
   - conda config --add channels conda-forge
-  - conda create -q -n pyenv libgfortran python=$TRAVIS_PYTHON_VERSION numpy scipy pytest pytest-cov pyyaml pycodestyle
+  - conda create -q -n pyenv python=$TRAVIS_PYTHON_VERSION 
   - source activate pyenv
+  - python -m pip install numpy scipy pytest pytest-cov pyyaml pycodestyle
   - conda install codecov
   - chmod +x ./
 script:
