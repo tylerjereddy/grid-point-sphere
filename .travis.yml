@@ -1,12 +1,16 @@
 os: linux
 dist: bionic
 language: python
-python:
-  # not actually using the Travis versions of Python shown here, but useful to organize matrix
-  # see: https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.html#the-travis-yml-file
-  - "3.6"
-  - "3.7"
-  - "3.8"
+matrix:
+  include:
+    - python: 3.6
+    - python: 3.7
+    - python: 3.8
+    - python: 3.6
+      name: "Power PC"
+      os: linux
+      arch: ppc64le
+
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
