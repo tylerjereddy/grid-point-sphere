@@ -340,10 +340,10 @@ def convert_cartesian_to_lat_long(cartesian_coord_array):
         output_array[1, 1] = output_array[0, 1]
 
     # careful at longitude transition point
-    output_array[output_array == -180] = 180
-    output_array[output_array < -180] += 360
-    output_array[output_array > 180] -= 360
-    output_array[abs(output_array) == 360] = 180
+    # output_array[output_array == -180] = 180
+    # output_array[output_array < -180] += 360
+    # output_array[output_array > 180] -= 360
+    # output_array[abs(output_array) == 360] = 180
     return output_array
 
 
@@ -1194,6 +1194,7 @@ def produce_level_1_grid_centers(spherical_polygon):
     return (grid_cell_center_coords_L1,
             edge_count_array_L1)
 
+
 def produce_level_2_grid_centers(spherical_polygon):
     (edge_count_array_L2,
      cart_coords_L2) = cast_subgrids(spherical_polygon)[2:4]
@@ -1230,7 +1231,8 @@ def produce_level_2_grid_centers(spherical_polygon):
                                     grid_cell_lat_1=unique_lat[0],
                                     grid_cell_lat_2=unique_lat[1])
             grid_center = convert_spherical_array_to_cartesian_array(np.array(
-                                            [1] + grid_center_lat_long.tolist()),
+                                            [1] +
+                                            grid_center_lat_long.tolist()),
                                             angle_measure='degrees')
             grid_cell_center_coords_L2.append(grid_center)
 
