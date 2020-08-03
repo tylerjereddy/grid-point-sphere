@@ -340,10 +340,10 @@ def convert_cartesian_to_lat_long(cartesian_coord_array):
         output_array[1, 1] = output_array[0, 1]
 
     # careful at longitude transition point
-    output_array[output_array == -180] = 180
-    output_array[output_array < -180] += 360
-    output_array[output_array > 180] -= 360
-    output_array[abs(output_array) == 360] = 180
+    # output_array[output_array == -180] = 180
+    # output_array[output_array < -180] += 360
+    # output_array[output_array > 180] -= 360
+    # output_array[abs(output_array) == 360] = 180
     return output_array
 
 
@@ -1193,3 +1193,58 @@ def produce_level_1_grid_centers(spherical_polygon):
 
     return (grid_cell_center_coords_L1,
             edge_count_array_L1)
+
+
+def produce_level_2_grid_centers(spherical_polygon):
+    (edge_count_array_L2,
+     cart_coords_L2) = cast_subgrids(spherical_polygon)[2:4]
+
+    grid_cell_center_coords_L2 = []
+
+    for super_grid_coord in cart_coords_L2:
+        # I think convert_cartesian_to_lat_long is currently
+        # best suited to dealing with edges, so feed two coords
+        # at a time
+        # NOTE: data structure apparently more nested at
+        # level > 1
+        for grid_coord in super_grid_coord:
+            grid_coord_convA = convert_cartesian_to_lat_long(grid_coord[:2])
+            grid_coord_convB = convert_cartesian_to_lat_long(grid_coord[2:])
+            # at least for the case of working with a grid cell that
+            # involves a pole, I think it is safer to take the unique lat/lon
+            # coordinates to get the span of the grid cell
+            result_arr = np.empty((grid_coord.shape[0], 2))
+            result_arr[:2] = grid_coord_convA
+            result_arr[2:] = grid_coord_convB
+            # careful with floating point unique comparisons,
+            # trying to fix some issues with rounding that otherwise
+            # lead to apparent duplication for "slightly different" vals
+            unique_lat = np.unique(result_arr[..., 0].round(decimals=7))
+            msg = "unique_lat has wrong size: " + str(unique_lat)
+            assert unique_lat.size == 2, msg
+            unique_long = np.unique(result_arr[..., 1].round(decimals=7))
+            msg = "unique_long has wrong size: " + str(unique_long)
+            assert unique_long.size == 2, msg
+            grid_center_lat_long = grid_center_point(
+                                    grid_cell_long_1=unique_long[0],
+                                    grid_cell_long_2=unique_long[1],
+                                    grid_cell_lat_1=unique_lat[0],
+                                    grid_cell_lat_2=unique_lat[1])
+            grid_center = convert_spherical_array_to_cartesian_array(np.array(
+                                            [1] +
+                                            grid_center_lat_long.tolist()),
+                                            angle_measure='degrees')
+            grid_cell_center_coords_L2.append(grid_center)
+
+    grid_cell_center_coords_L2 = np.array(grid_cell_center_coords_L2)
+
+    msg = "grid cell center coordinates should be in 3 dims"
+    assert grid_cell_center_coords_L2.shape[1] == 3, msg
+
+    msg = ("grid cell center coordinates should "
+           "match size of the edge count array for "
+           "level 2")
+    assert grid_cell_center_coords_L2.shape[0] == edge_count_array_L2.size, msg
+
+    return (grid_cell_center_coords_L2,
+            edge_count_array_L2)
