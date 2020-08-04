@@ -63,13 +63,24 @@ fig_level_1 = plt.figure()
 # assessment purposes
 fig_level_1_centers = plt.figure()
 fig_level_2_centers = plt.figure()
+fig_level_3_centers = plt.figure()
+fig_level_4_centers = plt.figure()
 ax = fig_level_1.add_subplot(111, projection='3d')
 ax_centers = fig_level_1_centers.add_subplot(111, projection='3d')
 ax_centers_lvl_2 = fig_level_2_centers.add_subplot(111, projection='3d')
+ax_centers_lvl_3 = fig_level_3_centers.add_subplot(111, projection='3d')
+ax_centers_lvl_4 = fig_level_4_centers.add_subplot(111, projection='3d')
 grid_cell_center_coords_L1 = lib.produce_level_1_grid_centers(
                                  spherical_polyon)[0]
-grid_cell_center_coords_L2 = lib.produce_level_2_grid_centers(
-                                 spherical_polyon)[0]
+grid_cell_center_coords_L2 = lib.produce_level_n_grid_centers(
+                                 spherical_polyon,
+                                 level=2)[0]
+grid_cell_center_coords_L3 = lib.produce_level_n_grid_centers(
+                                 spherical_polyon,
+                                 level=3)[0]
+grid_cell_center_coords_L4 = lib.produce_level_n_grid_centers(
+                                 spherical_polyon,
+                                 level=4)[0]
 ax_centers.scatter(grid_cell_center_coords_L1[..., 0],
                    grid_cell_center_coords_L1[..., 1],
                    grid_cell_center_coords_L1[..., 2],
@@ -78,6 +89,16 @@ ax_centers.scatter(grid_cell_center_coords_L1[..., 0],
 ax_centers_lvl_2.scatter(grid_cell_center_coords_L2[..., 0],
                    grid_cell_center_coords_L2[..., 1],
                    grid_cell_center_coords_L2[..., 2],
+                   marker='.',
+                   color='black')
+ax_centers_lvl_3.scatter(grid_cell_center_coords_L3[..., 0],
+                   grid_cell_center_coords_L3[..., 1],
+                   grid_cell_center_coords_L3[..., 2],
+                   marker='.',
+                   color='black')
+ax_centers_lvl_4.scatter(grid_cell_center_coords_L4[..., 0],
+                   grid_cell_center_coords_L4[..., 1],
+                   grid_cell_center_coords_L4[..., 2],
                    marker='.',
                    color='black')
 
@@ -128,12 +149,22 @@ for L3_sub in cartesian_coords_cells_L3:
                     square[...,2],
                     label='level 3',
                     color='grey')
+            ax_centers_lvl_3.plot(square[..., 0],
+                            square[..., 1],
+                            square[..., 2],
+                            color='k',
+                            alpha=0.3)
             iter_count += 1
         else:
             ax.plot(square[...,0],
                     square[...,1],
                     square[...,2],
                     color='grey')
+            ax_centers_lvl_3.plot(square[..., 0],
+                            square[..., 1],
+                            square[..., 2],
+                            color='k',
+                            alpha=0.3)
 # looks like the L4 Cartesian coords
 # are organized in sub-arrays:
 iter_count = 0
@@ -146,12 +177,22 @@ for L4_sub in cartesian_coords_cells_L4:
                     square[...,2],
                     label='level 4',
                     color='blue')
+            ax_centers_lvl_4.plot(square[..., 0],
+                            square[..., 1],
+                            square[..., 2],
+                            color='k',
+                            alpha=0.3)
             iter_count += 1
         else:
             ax.plot(square[...,0],
                     square[...,1],
                     square[...,2],
                     color='blue')
+            ax_centers_lvl_4.plot(square[..., 0],
+                            square[..., 1],
+                            square[..., 2],
+                            color='k',
+                            alpha=0.3)
 
 # color code cells by amount of spherical
 # polygon edges contained
@@ -255,6 +296,18 @@ polygon._edgecolors2d=polygon._edgecolors3d
 polygon.set_color('purple')
 polygon.set_label('input spherical polygon')
 ax_centers_lvl_2.add_collection3d(polygon)
+polygon = Poly3DCollection([interpolated_polygon], alpha=0.3)
+polygon._facecolors2d=polygon._facecolors3d
+polygon._edgecolors2d=polygon._edgecolors3d
+polygon.set_color('purple')
+polygon.set_label('input spherical polygon')
+ax_centers_lvl_3.add_collection3d(polygon)
+polygon = Poly3DCollection([interpolated_polygon], alpha=0.3)
+polygon._facecolors2d=polygon._facecolors3d
+polygon._edgecolors2d=polygon._edgecolors3d
+polygon.set_color('purple')
+polygon.set_label('input spherical polygon')
+ax_centers_lvl_4.add_collection3d(polygon)
 ax.legend(loc="lower left",
           bbox_to_anchor=(0,-0.1),
           ncol=2)
@@ -272,5 +325,13 @@ ax_centers.azim = 70
 ax_centers.elev = 50
 ax_centers_lvl_2.azim = 90
 ax_centers_lvl_2.elev = 50
+ax_centers_lvl_3.azim = 90
+ax_centers_lvl_3.elev = 50
+ax_centers_lvl_3.set_title('Level 3 grid centers')
+ax_centers_lvl_4.azim = 90
+ax_centers_lvl_4.elev = 50
+ax_centers_lvl_4.set_title('Level 4 grid centers')
 fig_level_1_centers.savefig("level_1_centers.png", dpi=300)
 fig_level_2_centers.savefig("level_2_centers.png", dpi=300)
+fig_level_3_centers.savefig("level_3_centers.png", dpi=300)
+fig_level_4_centers.savefig("level_4_centers.png", dpi=300)
