@@ -1195,13 +1195,27 @@ def produce_level_1_grid_centers(spherical_polygon):
             edge_count_array_L1)
 
 
-def produce_level_2_grid_centers(spherical_polygon):
-    (edge_count_array_L2,
-     cart_coords_L2) = cast_subgrids(spherical_polygon)[2:4]
+def produce_level_n_grid_centers(spherical_polygon, level=2):
+    # produce grid center data structure
+    # for levels 2+
+    if level == 2:
+        start = 2
+        end = 4
+    elif level == 3:
+        start = 4
+        end = 6
+    elif level == 4:
+        start = 6
+        end = 8
+    else:
+        raise ValueError(f'level {level} must be 2, 3, or 4')
 
-    grid_cell_center_coords_L2 = []
+    (edge_count_array_LN,
+     cart_coords_LN) = cast_subgrids(spherical_polygon)[start:end]
 
-    for super_grid_coord in cart_coords_L2:
+    grid_cell_center_coords_LN = []
+
+    for super_grid_coord in cart_coords_LN:
         # I think convert_cartesian_to_lat_long is currently
         # best suited to dealing with edges, so feed two coords
         # at a time
@@ -1234,17 +1248,17 @@ def produce_level_2_grid_centers(spherical_polygon):
                                             [1] +
                                             grid_center_lat_long.tolist()),
                                             angle_measure='degrees')
-            grid_cell_center_coords_L2.append(grid_center)
+            grid_cell_center_coords_LN.append(grid_center)
 
-    grid_cell_center_coords_L2 = np.array(grid_cell_center_coords_L2)
+    grid_cell_center_coords_LN = np.array(grid_cell_center_coords_LN)
 
     msg = "grid cell center coordinates should be in 3 dims"
-    assert grid_cell_center_coords_L2.shape[1] == 3, msg
+    assert grid_cell_center_coords_LN.shape[1] == 3, msg
 
-    msg = ("grid cell center coordinates should "
-           "match size of the edge count array for "
-           "level 2")
-    assert grid_cell_center_coords_L2.shape[0] == edge_count_array_L2.size, msg
+    msg = (f"grid cell center coordinates should "
+           f"match size of the edge count array for "
+           f"level {level}")
+    assert grid_cell_center_coords_LN.shape[0] == edge_count_array_LN.size, msg
 
-    return (grid_cell_center_coords_L2,
-            edge_count_array_L2)
+    return (grid_cell_center_coords_LN,
+            edge_count_array_LN)
