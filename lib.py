@@ -1262,3 +1262,58 @@ def produce_level_n_grid_centers(spherical_polygon, level=2):
 
     return (grid_cell_center_coords_LN,
             edge_count_array_LN)
+
+
+def level_1_det_first_point(spherical_polygon):
+    """
+    Select a level 1 grid cell that contains at least one spherical
+    polygon edge and then determine if the center of that grid cell
+    is inside or outside the spherical polygon.
+    """
+    (grid_cell_center_coords_L1,
+     edge_count_array_L1) = produce_level_1_grid_centers(spherical_polygon)
+
+    # for now, let's just select the first center coordinate
+    # that belong to a grid cell at L1 with at least 1
+    # spherical_polyon edge that intersects it
+    candidate_grid_center = grid_cell_center_coords_L1[np.argmax(
+                                              edge_count_array_L1 > 0)]
+
+    # we'll need that lat/long coords of this cell below
+    candidate_grid_center_sph = convert_cartesian_to_lat_long(
+                                  candidate_grid_center)
+
+    first_cell_lat_1 = candidate_grid_center_sph[0][0]
+    first_cell_lat_2 = candidate_grid_center_sph[1][0]
+    first_cell_long_1 = candidate_grid_center_sph[0][1]
+    first_cell_long_2 = candidate_grid_center_sph[1][1]
+
+    # we'll also need the list of spherical_polygon edges
+    # that actually intersect with the cell (should probably
+    # retain this information upstream in the control flow?)
+    # we only really need a single edge I think
+    num_coord_rows = spherical_polygon.shape[0]
+    list_edges_in_first_cell = []
+    for row_num in range(num_coord_rows):
+        start = row_num
+        if row_num == num_coord_rows - 1:
+            end = 0
+        else:
+            end = row_num + 1
+        curr_edge = spherical_polygon[start:end]
+        # TODO: iterate over the edges of candidate_grid_center
+        status = determine_arc_intersection(point_A=curr_edge[0],
+                                            point_B=curr_edge[1],
+                                            point_C=,
+                                            point_D=,
+                                            center=np.zeros((3,)))
+
+    # determine whether candidate_grid_center is inside
+    # or outside of the input spherical_polygon
+    status = determine_first_traversal_point(first_cell_lat_1,
+                                             first_cell_lat_2,
+                                             first_cell_long_1,
+                                             first_cell_long_2,
+                                             list_edges_in_first_cell,
+                                             center=np.zeros(3,),
+                                             radius=1.0)
