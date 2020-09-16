@@ -111,88 +111,88 @@ ax.scatter(cartesian_coords_cells_L1[...,0],
 # looks like the L2 Cartesian coords
 # are organized in sub-arrays:
 iter_count = 0
-for L2_sub in cartesian_coords_cells_L2:
-    for square in L2_sub:
-        if iter_count == 0:
-            # add label only once
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    label='level 2',
-                    color='green')
-            ax_centers_lvl_2.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
-            iter_count += 1
-        else:
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    color='green')
-            ax_centers_lvl_2.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
+#for L2_sub in cartesian_coords_cells_L2:
+#   for square in L2_sub:
+#       if iter_count == 0:
+#           # add label only once
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   label='level 2',
+#                   color='green')
+#           ax_centers_lvl_2.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
+#           iter_count += 1
+#       else:
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   color='green')
+#           ax_centers_lvl_2.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
 
 # looks like the L3 Cartesian coords
 # are organized in sub-arrays:
-iter_count = 0
-for L3_sub in cartesian_coords_cells_L3:
-    for square in L3_sub:
-        if iter_count == 0:
-            # add label only once
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    label='level 3',
-                    color='grey')
-            ax_centers_lvl_3.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
-            iter_count += 1
-        else:
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    color='grey')
-            ax_centers_lvl_3.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
+#iter_count = 0
+#for L3_sub in cartesian_coords_cells_L3:
+#   for square in L3_sub:
+#       if iter_count == 0:
+#           # add label only once
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   label='level 3',
+#                   color='grey')
+#           ax_centers_lvl_3.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
+#           iter_count += 1
+#       else:
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   color='grey')
+#           ax_centers_lvl_3.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
 # looks like the L4 Cartesian coords
 # are organized in sub-arrays:
-iter_count = 0
-for L4_sub in cartesian_coords_cells_L4:
-    for square in L4_sub:
-        if iter_count == 0:
-            # add label only once
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    label='level 4',
-                    color='blue')
-            ax_centers_lvl_4.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
-            iter_count += 1
-        else:
-            ax.plot(square[...,0],
-                    square[...,1],
-                    square[...,2],
-                    color='blue')
-            ax_centers_lvl_4.plot(square[..., 0],
-                            square[..., 1],
-                            square[..., 2],
-                            color='k',
-                            alpha=0.3)
+#iter_count = 0
+#for L4_sub in cartesian_coords_cells_L4:
+#   for square in L4_sub:
+#       if iter_count == 0:
+#           # add label only once
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   label='level 4',
+#                   color='blue')
+#           ax_centers_lvl_4.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
+#           iter_count += 1
+#       else:
+#           ax.plot(square[...,0],
+#                   square[...,1],
+#                   square[...,2],
+#                   color='blue')
+#           ax_centers_lvl_4.plot(square[..., 0],
+#                           square[..., 1],
+#                           square[..., 2],
+#                           color='k',
+#                           alpha=0.3)
 
 # color code cells by amount of spherical
 # polygon edges contained
@@ -257,11 +257,16 @@ for key, edge_entry in tqdm(dict_edge_data.items(),
         elif current_edge_count == 2 and not has_red_legend_entry:
             label='Level 1 with 2 edges'
             has_red_legend_entry = True
+        if current_edge_count == 0:
+            lw = 1
+        if current_edge_count >= 1:
+            lw = 4
         ax.plot(current_edge[..., 0],
                 current_edge[..., 1],
                 current_edge[..., 2],
                 label=label,
-                color=colors[current_edge_count])
+                color=colors[current_edge_count],
+                lw=lw)
         # for the L1 centers plot we just want
         # the grid outline for now
         ax_centers.plot(current_edge[..., 0],
@@ -280,9 +285,12 @@ polygon.set_label('input spherical polygon')
 ax.add_collection3d(polygon)
 ax.azim = -30
 ax.elev = -30
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+#ax.set_xlabel('x')
+#ax.set_ylabel('y')
+#ax.set_zlabel('z')
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
 
 ax_centers.set_xlabel('x')
 ax_centers.set_ylabel('y')
@@ -308,15 +316,15 @@ polygon._edgecolors2d=polygon._edgecolors3d
 polygon.set_color('purple')
 polygon.set_label('input spherical polygon')
 ax_centers_lvl_4.add_collection3d(polygon)
-ax.legend(loc="lower left",
-          bbox_to_anchor=(0,-0.1),
-          ncol=2)
-ax.set_title('Prototype Multilevel Spherical Grid Data '
-             'Structure Based on Published Description by \n'
-             'Li et al. (2017); pre-requisite for fastest '
-             'known spherical point-in-polygon algorithm',
-             y=1.12,
-             fontsize=8)
+#ax.legend(loc="lower left",
+#          bbox_to_anchor=(0,-0.1),
+#          ncol=2)
+#ax.set_title('Prototype Multilevel Spherical Grid Data '
+#            'Structure Based on Published Description by \n'
+#            'Li et al. (2017); pre-requisite for fastest '
+#            'known spherical point-in-polygon algorithm',
+#            y=1.12,
+#            fontsize=8)
 
 fig_level_1.savefig("level_1_grid.png", dpi=300)
 fig_level_1.set_size_inches(10,10)
