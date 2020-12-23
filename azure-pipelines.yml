@@ -40,5 +40,9 @@ steps:
 - script: |
     pycodestyle lib.py
     pytest --cov=lib
-    codecov
   displayName: 'test'
+
+- script: |
+    curl -s https://codecov.io/bash | bash
+  condition: succeeded()
+  displayName: 'Codecov Coverage Data Upload'
