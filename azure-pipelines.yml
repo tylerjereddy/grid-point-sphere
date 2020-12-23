@@ -1,0 +1,44 @@
+trigger:
+  # start a new build for every push
+  batch: False
+  branches:
+    include:
+      - master
+pr:
+  branches:
+    include:
+    - '*'  # must quote since "*" is a YAML reserved character; we want a string
+
+pool:
+  vmImage: 'ubuntu-latest'
+strategy:
+  matrix:
+    Python37:
+      python.version: '3.7'
+    Python38:
+      python.version: '3.8'
+    Python39:
+      python.version: '3.9'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+- script: >-
+    python -m pip install
+    numpy
+    pycodestyle
+    pytest
+    pytest-cov
+    pytest-azurepipelines
+    pyyaml
+    scipy
+  displayName: 'Install dependencies'
+
+- script: |
+    pycodestyle lib.py
+    pytest --cov=lib
+    codecov
+  displayName: 'test'
